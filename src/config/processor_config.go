@@ -12,3 +12,7 @@ type ProcessorConfig struct {
 	Concurrency    int
 	PollTimeout    int
 }
+
+func NewProcessConfigs() *ProcessorConfigs {
+	return nil
+}

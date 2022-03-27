@@ -54,6 +54,7 @@ func newConsumer(cfg config.ProcessorConfig) *kafka.Consumer {
 func (p *Process) Consume() int {
 	/**Count to execute*/
 	cnt := p.DeadCount
+	p.mutex.Lock()
 
 	for i := 0; i < cnt; i++ {
 
@@ -61,9 +62,8 @@ func (p *Process) Consume() int {
 		c := newConsumer(p.config)
 
 		//register to consumer
-		p.mutex.Lock()
 		p.consumers = append(p.consumers, c)
-		p.mutex.Unlock()
+		fmt.Println(p.consumers)
 
 		go func() {
 			for {
@@ -77,6 +77,7 @@ func (p *Process) Consume() int {
 					TODO place for some action
 					*/
 				case kafka.Error:
+					fmt.Println(p.consumers)
 					p.DeadCount += 1
 					p.removeObject(c) //Remove consumer from list
 
@@ -90,12 +91,14 @@ func (p *Process) Consume() int {
 		}()
 
 	}
+	p.mutex.Unlock()
 
 	if cnt > 0 {
 		return cnt
 	} else {
 		return 0
 	}
+
 }
 
 func (p *Process) removeObject(target *kafka.Consumer) {

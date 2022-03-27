@@ -9,7 +9,7 @@ type Manager struct {
 }
 
 type ManagerImpl interface {
-	ExecuteAll()
+	ExecuteAll() map[string]int
 }
 
 func NewManager(configs config.ProcessorConfigs) *Manager {
@@ -25,9 +25,15 @@ func NewManager(configs config.ProcessorConfigs) *Manager {
 	}
 }
 
-// ExecuteAll /**Execute all consumer*/
-func (m *Manager) ExecuteAll() {
-	for _, v := range m.processors {
-		v.Consume()
+// ExecuteAll
+/**
+Execute all consumer
+@Return : map[string]int, Key: Name of processor, Value : executed concurrency
+*/
+func (m *Manager) ExecuteAll() map[string]int {
+	var retv = make(map[string]int)
+	for k, v := range m.processors {
+		retv[k] = v.Consume()
 	}
+	return retv
 }

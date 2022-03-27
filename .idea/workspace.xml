@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0d9e1f42-2835-4293-bd50-2bf0f6d4117e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/go-ka.iml" beforeDir="false" afterPath="$PROJECT_DIR$/go-ka.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/src/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/consumer/manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/consumer/manager.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/consumer/processor.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/consumer/processor.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -125,7 +125,7 @@
       <workItem from="1648363619108" duration="5867000" />
       <workItem from="1648369520492" duration="152000" />
       <workItem from="1648369677588" duration="21000" />
-      <workItem from="1648369723149" duration="367000" />
+      <workItem from="1648369723149" duration="797000" />
     </task>
     <servers />
   </component>

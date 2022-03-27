@@ -15,7 +15,7 @@ type Process struct {
 }
 
 type ProcessImpl interface {
-	Consume()
+	Consume() int
 }
 
 func NewProcess(cfg config.ProcessorConfig) *Process {
@@ -51,7 +51,7 @@ func newConsumer(cfg config.ProcessorConfig) *kafka.Consumer {
 	return c
 }
 
-func (p *Process) Consume() {
+func (p *Process) Consume() int {
 	/**Count to execute*/
 	cnt := p.config.Concurrency - p.DeadCount
 
@@ -89,6 +89,12 @@ func (p *Process) Consume() {
 			}
 		}()
 
+	}
+
+	if cnt > 0 {
+		return cnt
+	} else {
+		return 0
 	}
 }
 

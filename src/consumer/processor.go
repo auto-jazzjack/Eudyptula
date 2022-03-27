@@ -1,9 +1,9 @@
 package consumer
 
 import (
-	"config"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"go-ka/config"
 	"sync"
 )
 

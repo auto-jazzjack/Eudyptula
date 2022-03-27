@@ -1,7 +1,7 @@
 package consumer
 
 import (
-	"config"
+	"go-ka/config"
 )
 
 type Manager struct {

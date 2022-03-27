@@ -1,7 +1,7 @@
 package main
 
 import (
-	"controller"
+	"go-ka/controller"
 	"net/http"
 )
 

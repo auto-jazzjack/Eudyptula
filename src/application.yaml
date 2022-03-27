@@ -1,8 +1,8 @@
-processor:
+Processors:
   myFirstProcessor:
-    BoostrapServer: localhost:9202
+    BoostrapServer: localhost:9092
     GroupId: hellow
     Offset: latest
     Topic: hello_world
-    Concurrency: 6
+    Concurrency: 1
     PollTimeout: 1000

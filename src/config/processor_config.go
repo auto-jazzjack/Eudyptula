@@ -20,19 +20,20 @@ type ProcessorConfig struct {
 }
 
 func NewProcessConfigs() *ProcessorConfigs {
-	yamlFile, err := ioutil.ReadFile("./application.yaml")
+	yamlFile, err := ioutil.ReadFile("./src/application.yaml")
 	if err != nil {
+		fmt.Println(err)
 		panic("yamlFile.Get err")
 	}
 
 	var v = &ProcessorConfigs{}
 
 	//var json, err1 = yamlToJson.YAMLToJSON(yamlFile)
+	fmt.Println(string(yamlFile))
 	err2 := yamlToJson.Unmarshal(yamlFile, v)
 	if err2 != nil {
 		panic(err2)
 	}
 
-	fmt.Println(v)
 	return v
 }

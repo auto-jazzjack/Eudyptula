@@ -53,7 +53,7 @@ func newConsumer(cfg config.ProcessorConfig) *kafka.Consumer {
 
 func (p *Process) Consume() int {
 	/**Count to execute*/
-	cnt := p.config.Concurrency - p.DeadCount
+	cnt := p.DeadCount
 
 	for i := 0; i < cnt; i++ {
 

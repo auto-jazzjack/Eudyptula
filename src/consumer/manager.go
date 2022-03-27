@@ -1,11 +1,15 @@
 package consumer
 
 import (
-	"config"
+	"go-ka/config"
 )
 
 type Manager struct {
 	processors map[string]*Process
+}
+
+type ManagerImpl interface {
+	ExecuteAll()
 }
 
 func NewManager(configs config.ProcessorConfigs) *Manager {
@@ -18,5 +22,12 @@ func NewManager(configs config.ProcessorConfigs) *Manager {
 
 	return &Manager{
 		processors: results,
+	}
+}
+
+// ExecuteAll /**Execute all consumer*/
+func (m *Manager) ExecuteAll() {
+	for _, v := range m.processors {
+		v.Consume()
 	}
 }

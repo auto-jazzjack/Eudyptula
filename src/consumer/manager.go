@@ -25,10 +25,9 @@ func NewManager(configs config.ProcessorConfigs) *Manager {
 	}
 }
 
-//Execute all consumer
+// ExecuteAll /**Execute all consumer*/
 func (m *Manager) ExecuteAll() {
 	for _, v := range m.processors {
 		v.Consume()
 	}
-	//m.processors
 }

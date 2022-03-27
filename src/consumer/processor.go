@@ -2,16 +2,16 @@ package consumer
 
 import (
 	"config"
-	"errors"
 	"fmt"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
-	"os"
+	"sync"
 )
 
 type Process struct {
 	config    config.ProcessorConfig
-	consumers []*kafka.Consumer
-	DeadCount int
+	consumers []*kafka.Consumer /**Only running cousumer*/
+	DeadCount int               /**TODO should be atomic*/
+	mutex     *sync.Mutex       /**guarantee atomic for consumer*/
 }
 
 type ProcessImpl interface {
@@ -19,52 +19,89 @@ type ProcessImpl interface {
 }
 
 func NewProcess(cfg config.ProcessorConfig) *Process {
-	consumer := newConsumer(cfg)
+	//consumer := newConsumer(cfg)
 	return &Process{
 		config:    cfg,
-		consumers: consumer,
+		consumers: []*kafka.Consumer{},
 		/*For the init status, all processor just created and not executed*/
-		DeadCount: len(consumer),
+		DeadCount: cfg.Concurrency,
+		mutex:     &sync.Mutex{},
 	}
 }
 
-func newConsumer(cfg config.ProcessorConfig) []*kafka.Consumer {
-	var consumers []*kafka.Consumer
+func newConsumer(cfg config.ProcessorConfig) *kafka.Consumer {
+	//var consumers []*kafka.Consumer
 
-	for i := 0; i < cfg.Concurrency; i++ {
-		c, err := kafka.NewConsumer(&kafka.ConfigMap{
-			"bootstrap.servers": cfg.BoostrapServer,
-			"group.id":          cfg.GroupId,
-			"auto.offset.reset": cfg.Offset,
-		})
+	c, err := kafka.NewConsumer(&kafka.ConfigMap{
+		"bootstrap.servers": cfg.BoostrapServer,
+		"group.id":          cfg.GroupId,
+		"auto.offset.reset": cfg.Offset,
+	})
 
-		if err != nil {
-			panic(err)
-		}
-
-		err2 := c.SubscribeTopics([]string{cfg.Topic}, nil)
-		if err2 != nil {
-			panic(err2)
-		}
-		consumers = append(consumers, c)
+	if err != nil {
+		panic(err)
 	}
-	return consumers
+
+	err2 := c.SubscribeTopics([]string{cfg.Topic}, nil)
+	if err2 != nil {
+		panic(err2)
+	}
+	//consumers = append(consumers, c)
+
+	return c
 }
 
-func (p *Process) Consume() error {
+func (p *Process) Consume() {
+	/**Count to execute*/
+	cnt := p.config.Concurrency - p.DeadCount
 
-	//P의 concurrency 만큼 실행해야함.
+	for i := 0; i < cnt; i++ {
 
-	for {
-		ev := p.consumer.Poll(p.config.PollTimeout)
-		switch e := ev.(type) {
-		case *kafka.Message:
-			fmt.Printf("%% Message on %s:\n%s\n", e.TopicPartition, string(e.Value))
-		case kafka.Error:
-			fmt.Fprintf(os.Stderr, "%% Error: %v\n", e)
+		//Create one consumer
+		c := newConsumer(p.config)
 
-			/**Manager will get error from this when kafka dead*/
-			return errors.New("kafka dead")
+		//register to consumer
+		p.mutex.Lock()
+		p.consumers = append(p.consumers, c)
+		p.mutex.Unlock()
+
+		go func() {
+			for {
+				//start to consume
+				ev := c.Poll(p.config.PollTimeout)
+				switch e := ev.(type) {
+				case *kafka.Message:
+					fmt.Printf("%% Message on %s:\n%s\n", e.TopicPartition, string(e.Value))
+
+					/**
+					TODO place for some action
+					*/
+				case kafka.Error:
+					p.DeadCount += 1
+					p.removeObject(c) //Remove consumer from list
+
+					err2 := c.Close()
+					if err2 != nil {
+						fmt.Println(err2)
+					}
+					fmt.Println(e)
+				}
+			}
+		}()
+
+	}
+}
+
+func (p *Process) removeObject(target *kafka.Consumer) {
+
+	p.mutex.Lock()
+	var newValue []*kafka.Consumer
+
+	for _, v := range p.consumers {
+		if v != target {
+			newValue = append(newValue, v)
 		}
 	}
+	p.consumers = newValue
+	p.mutex.Unlock()
 }

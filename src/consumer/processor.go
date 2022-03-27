@@ -77,7 +77,7 @@ func (p *Process) Consume() int {
 					TODO place for some action
 					*/
 				case kafka.Error:
-					fmt.Println(p.consumers)
+					//fmt.Println(p.consumers)
 					p.DeadCount += 1
 					p.removeObject(c) //Remove consumer from list
 
@@ -92,8 +92,10 @@ func (p *Process) Consume() int {
 
 	}
 	p.mutex.Unlock()
+	p.DeadCount = p.config.Concurrency - len(p.consumers)
 
 	if cnt > 0 {
+
 		return cnt
 	} else {
 		return 0
@@ -103,7 +105,7 @@ func (p *Process) Consume() int {
 
 func (p *Process) removeObject(target *kafka.Consumer) {
 
-	p.mutex.Lock()
+	fmt.Println(target)
 	var newValue []*kafka.Consumer
 
 	for _, v := range p.consumers {
@@ -112,5 +114,4 @@ func (p *Process) removeObject(target *kafka.Consumer) {
 		}
 	}
 	p.consumers = newValue
-	p.mutex.Unlock()
 }

@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"controller"
+	"net/http"
+)
 
 func main() {
-	fmt.Println("Hello workd")
+	http.HandleFunc(controller.REVIVE, controller.NewCluster().ServeHTTP)
+	err := http.ListenAndServe(":9001", nil)
+	if err != nil {
+		return
+	}
 }

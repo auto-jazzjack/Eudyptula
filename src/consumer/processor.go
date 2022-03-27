@@ -3,7 +3,7 @@ package consumer
 import (
 	"config"
 	"fmt"
-	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"sync"
 )
 

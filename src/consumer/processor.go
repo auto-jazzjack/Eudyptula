@@ -15,7 +15,7 @@ type Process struct {
 }
 
 type ProcessImpl interface {
-	Consume()
+	Consume() int
 }
 
 func NewProcess(cfg config.ProcessorConfig) *Process {
@@ -51,9 +51,10 @@ func newConsumer(cfg config.ProcessorConfig) *kafka.Consumer {
 	return c
 }
 
-func (p *Process) Consume() {
+func (p *Process) Consume() int {
 	/**Count to execute*/
-	cnt := p.config.Concurrency - p.DeadCount
+	cnt := p.DeadCount
+	p.mutex.Lock()
 
 	for i := 0; i < cnt; i++ {
 
@@ -61,9 +62,8 @@ func (p *Process) Consume() {
 		c := newConsumer(p.config)
 
 		//register to consumer
-		p.mutex.Lock()
 		p.consumers = append(p.consumers, c)
-		p.mutex.Unlock()
+		fmt.Println(p.consumers)
 
 		go func() {
 			for {
@@ -77,6 +77,7 @@ func (p *Process) Consume() {
 					TODO place for some action
 					*/
 				case kafka.Error:
+					//fmt.Println(p.consumers)
 					p.DeadCount += 1
 					p.removeObject(c) //Remove consumer from list
 
@@ -90,11 +91,21 @@ func (p *Process) Consume() {
 		}()
 
 	}
+	p.mutex.Unlock()
+	p.DeadCount = p.config.Concurrency - len(p.consumers)
+
+	if cnt > 0 {
+
+		return cnt
+	} else {
+		return 0
+	}
+
 }
 
 func (p *Process) removeObject(target *kafka.Consumer) {
 
-	p.mutex.Lock()
+	fmt.Println(target)
 	var newValue []*kafka.Consumer
 
 	for _, v := range p.consumers {
@@ -103,5 +114,4 @@ func (p *Process) removeObject(target *kafka.Consumer) {
 		}
 	}
 	p.consumers = newValue
-	p.mutex.Unlock()
 }

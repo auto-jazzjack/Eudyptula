@@ -5,6 +5,7 @@ import (
 )
 
 type Manager struct {
+	cfg        *config.ProcessorConfigs
 	processors map[string]*Process
 }
 
@@ -12,7 +13,7 @@ type ManagerImpl interface {
 	ExecuteAll() map[string]int
 }
 
-func NewManager(configs config.ProcessorConfigs) *Manager {
+func NewManager(configs *config.ProcessorConfigs) *Manager {
 
 	results := make(map[string]*Process)
 
@@ -21,6 +22,7 @@ func NewManager(configs config.ProcessorConfigs) *Manager {
 	}
 
 	return &Manager{
+		cfg:        configs,
 		processors: results,
 	}
 }

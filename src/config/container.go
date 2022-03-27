@@ -2,18 +2,27 @@ package config
 
 import (
 	"go.uber.org/dig"
+	"sync"
 )
 
-var c = dig.New()
+var cached *Container
+var lock = &sync.Mutex{}
 
 type Container struct {
 	c *dig.Container
 }
 
 func NewContainer() *Container {
-	return &Container{
-		c: dig.New(),
+
+	lock.Lock()
+	if cached == nil {
+		cached = &Container{
+			c: dig.New(),
+		}
 	}
+	lock.Unlock()
+	return cached
+
 }
 
 func (con *Container) Provide(constructor interface{}, opts ...dig.ProvideOption) {

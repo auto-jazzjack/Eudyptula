@@ -30,7 +30,7 @@ func NewProcessConfigs() *ProcessorConfigs {
 	//var json, err1 = yamlToJson.YAMLToJSON(yamlFile)
 	err2 := yamlToJson.Unmarshal(yamlFile, v)
 	if err2 != nil {
-		return nil
+		panic(err2)
 	}
 
 	fmt.Println(v)

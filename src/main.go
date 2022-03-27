@@ -12,8 +12,12 @@ func main() {
 	c := config.NewContainer()
 	c.Provide(config.NewProcessConfigs)
 	//c.Provide(consumer.NewManager)
+	c.Provide(controller.NewCluster)
 
-	http.HandleFunc(controller.REVIVE, controller.NewCluster().ServeHTTP)
+	c.Invoke(func(cluster *controller.Cluster) {
+		http.HandleFunc(controller.REVIVE, cluster.ServeHTTP)
+	})
+
 	err := http.ListenAndServe(":9001", nil)
 	if err != nil {
 		return

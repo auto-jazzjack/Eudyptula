@@ -6,10 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="0d9e1f42-2835-4293-bd50-2bf0f6d4117e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config/processor_config.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/processor_config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/consumer/manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/consumer/manager.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/src/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/src/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,6 +39,17 @@
         <option value="file://$PROJECT_DIR$" />
       </list>
     </option>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/src/consumer/processor.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/config/container.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///usr/local/go/src/encoding/json/encode.go" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/src/application.yaml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/go.mod" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/config/processor_config.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/consumer/manager.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/controller/cluster.go" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -128,7 +136,7 @@
       <workItem from="1648363619108" duration="5867000" />
       <workItem from="1648369520492" duration="152000" />
       <workItem from="1648369677588" duration="21000" />
-      <workItem from="1648369723149" duration="2873000" />
+      <workItem from="1648369723149" duration="4376000" />
     </task>
     <servers />
   </component>
@@ -156,6 +164,11 @@
           <url>file://$PROJECT_DIR$/src/main.go</url>
           <line>9</line>
           <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/src/config/processor_config.go</url>
+          <line>36</line>
+          <option name="timeStamp" value="4" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -12,13 +12,14 @@ type Process struct {
 	consumers []*kafka.Consumer /**Only running cousumer*/
 	DeadCount int               /**TODO should be atomic*/
 	mutex     *sync.Mutex       /**guarantee atomic for consumer*/
+	executor  *Executor
 }
 
 type ProcessImpl interface {
 	Consume() int
 }
 
-func NewProcess(cfg config.ProcessorConfig) *Process {
+func NewProcess(cfg config.ProcessorConfig, executor *Executor) *Process {
 	//consumer := newConsumer(cfg)
 	return &Process{
 		config:    cfg,
@@ -72,6 +73,8 @@ func (p *Process) Consume() int {
 				switch e := ev.(type) {
 				case *kafka.Message:
 					fmt.Printf("%% Message on %s:\n%s\n", e.TopicPartition, string(e.Value))
+					res := p.executor.DeSerialize(e.Value)
+					p.executor.DoAction(res)
 
 					/**
 					TODO place for some action

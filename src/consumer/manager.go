@@ -19,7 +19,7 @@ func NewManager(configs *config.ProcessorConfigs) *Manager {
 	results := make(map[string]*Process[any])
 
 	for k, v := range configs.Processors {
-		a := (interface{}(reflect.New(v.Clazz))).(Executor[interface{}])
+		a := (interface{}(reflect.New(*v.Clazz))).(Executor[interface{}])
 
 		results[k] = NewProcess(v, a)
 	}

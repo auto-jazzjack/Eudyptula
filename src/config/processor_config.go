@@ -18,7 +18,7 @@ type ProcessorConfig struct {
 	Topic          string
 	Concurrency    int
 	PollTimeout    int
-	Clazz          reflect.Type
+	Clazz          *reflect.Type
 }
 
 func NewProcessConfigs() *ProcessorConfigs {
@@ -36,6 +36,7 @@ func NewProcessConfigs() *ProcessorConfigs {
 	if err2 != nil {
 		panic(err2)
 	}
+	fmt.Println(v)
 
 	return v
 }

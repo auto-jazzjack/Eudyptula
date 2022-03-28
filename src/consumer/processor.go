@@ -7,26 +7,27 @@ import (
 	"sync"
 )
 
-type Process struct {
+type Process[V interface{}] struct {
 	config    config.ProcessorConfig
 	consumers []*kafka.Consumer /**Only running cousumer*/
 	DeadCount int               /**TODO should be atomic*/
 	mutex     *sync.Mutex       /**guarantee atomic for consumer*/
-	executor  *Executor
+	executor  *Executor[V]
 }
 
 type ProcessImpl interface {
 	Consume() int
 }
 
-func NewProcess(cfg config.ProcessorConfig, executor *Executor) *Process {
+func NewProcess[V interface{}](cfg config.ProcessorConfig, executor *Executor[V]) *Process[V] {
 	//consumer := newConsumer(cfg)
-	return &Process{
+	return &Process[V]{
 		config:    cfg,
 		consumers: []*kafka.Consumer{},
 		/*For the init status, all processor just created and not executed*/
 		DeadCount: cfg.Concurrency,
 		mutex:     &sync.Mutex{},
+		executor:  executor,
 	}
 }
 

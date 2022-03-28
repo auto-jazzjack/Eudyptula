@@ -6,3 +6,4 @@ Processors:
     Topic: hello_world
     Concurrency: 1
     PollTimeout: 1000
+    Clazz: subject.LocalSubject

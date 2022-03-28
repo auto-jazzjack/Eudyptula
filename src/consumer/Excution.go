@@ -1,6 +1,7 @@
 package consumer
 
-type Executor[V interface{}] interface {
-	DeSerialize(data []byte) V
+type Executor[V any] interface {
+	DeSerialize(data []byte, target V) V
+	DefaultValue() V
 	DoAction(data V)
 }

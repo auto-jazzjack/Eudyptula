@@ -12,14 +12,14 @@ type Process[V interface{}] struct {
 	consumers []*kafka.Consumer /**Only running cousumer*/
 	DeadCount int               /**TODO should be atomic*/
 	mutex     *sync.Mutex       /**guarantee atomic for consumer*/
-	executor  *Executor[V]
+	executor  Executor[V]
 }
 
 type ProcessImpl interface {
 	Consume() int
 }
 
-func NewProcess[V interface{}](cfg config.ProcessorConfig, executor *Executor[V]) *Process[V] {
+func NewProcess[V any](cfg config.ProcessorConfig, executor Executor[V]) *Process[V] {
 	//consumer := newConsumer(cfg)
 	return &Process[V]{
 		config:    cfg,
@@ -53,7 +53,7 @@ func newConsumer(cfg config.ProcessorConfig) *kafka.Consumer {
 	return c
 }
 
-func (p *Process) Consume() int {
+func (p *Process[V]) Consume() int {
 	/**Count to execute*/
 	cnt := p.DeadCount
 	p.mutex.Lock()
@@ -74,7 +74,8 @@ func (p *Process) Consume() int {
 				switch e := ev.(type) {
 				case *kafka.Message:
 					fmt.Printf("%% Message on %s:\n%s\n", e.TopicPartition, string(e.Value))
-					res := p.executor.DeSerialize(e.Value)
+					defaultValue := p.executor.DefaultValue()
+					res := p.executor.DeSerialize(e.Value, defaultValue)
 					p.executor.DoAction(res)
 
 					/**
@@ -107,7 +108,7 @@ func (p *Process) Consume() int {
 
 }
 
-func (p *Process) removeObject(target *kafka.Consumer) {
+func (p *Process[V]) removeObject(target *kafka.Consumer) {
 
 	fmt.Println(target)
 	var newValue []*kafka.Consumer

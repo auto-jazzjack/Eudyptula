@@ -6,6 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="0d9e1f42-2835-4293-bd50-2bf0f6d4117e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config/processor_config.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/processor_config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/consumer/Excution.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/consumer/Excution.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/consumer/manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/consumer/manager.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/consumer/processor.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/consumer/processor.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -77,7 +80,7 @@
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="go.sdk" />
+    <property name="settings.editor.selected.configurable" value="go" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -172,13 +175,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/src/config/processor_config.go</url>
-          <line>37</line>
+          <line>39</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/src/config/processor_config.go</url>
-          <line>23</line>
+          <line>25</line>
           <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/src/consumer/manager.go</url>
+          <line>23</line>
+          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -90,9 +90,35 @@ func toMap(nums []int32) map[int32]*sarama.PartitionConsumer {
 func (p *Process) Consume() int {
 	for _, v := range p.consumers {
 		v.mutex.Lock()
-		for _, itr := range v.deadPartition {
+		cpy := v.deadPartition
+		for idx, itr := range cpy {
 
-			(*v.worker[itr]).Messages().
+			c, err := (*v.client).ConsumePartition(v.topic, itr, sarama.OffsetOldest)
+
+			if err != nil {
+				continue
+			} else {
+				//success to revive dead Partition
+				v.deadPartition = append(v.deadPartition[:idx], v.deadPartition[idx:]...)
+				v.livePartition = append(v.livePartition, itr)
+				v.worker[itr] = &c
+
+				go func() {
+					for {
+						select {
+						case msg1 := <-(*v.worker[itr]).Messages():
+							fmt.Println("received", msg1)
+						case msg1 := <-(*v.worker[itr]).Errors():
+							fmt.Println("error", msg1)
+							*v.worker[itr] = nil
+							v.livePartition = append(v.livePartition[:1], v.livePartition[2:]...)
+							break
+
+						}
+					}
+				}()
+
+			}
 		}
 		v.mutex.Unlock()
 	}

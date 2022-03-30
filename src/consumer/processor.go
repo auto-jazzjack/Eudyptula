@@ -2,16 +2,16 @@ package consumer
 
 import (
 	"fmt"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/Shopify/sarama"
 	"go-ka/config"
 	"sync"
 )
 
 type Process[V interface{}] struct {
 	config    config.ProcessorConfig
-	consumers []*kafka.Consumer /**Only running cousumer*/
-	DeadCount int               /**TODO should be atomic*/
-	mutex     *sync.Mutex       /**guarantee atomic for consumer*/
+	consumers []*sarama.Consumer /**Only running cousumer*/
+	DeadCount int                /**TODO should be atomic*/
+	mutex     *sync.Mutex        /**guarantee atomic for consumer*/
 	executor  Executor[V]
 }
 
@@ -23,7 +23,7 @@ func NewProcess[V any](cfg config.ProcessorConfig, executor Executor[V]) *Proces
 	//consumer := newConsumer(cfg)
 	return &Process[V]{
 		config:    cfg,
-		consumers: []*kafka.Consumer{},
+		consumers: []*sarama.Consumer{},
 		/*For the init status, all processor just created and not executed*/
 		DeadCount: cfg.Concurrency,
 		mutex:     &sync.Mutex{},
@@ -31,10 +31,10 @@ func NewProcess[V any](cfg config.ProcessorConfig, executor Executor[V]) *Proces
 	}
 }
 
-func newConsumer(cfg config.ProcessorConfig) *kafka.Consumer {
+func newConsumer(cfg config.ProcessorConfig) *sarama.Consumer {
 	//var consumers []*kafka.Consumer
 
-	c, err := kafka.NewConsumer(&kafka.ConfigMap{
+	c, err := sarama.NewConsumer(&sarama.Config{
 		"bootstrap.servers": cfg.BoostrapServer,
 		"group.id":          cfg.GroupId,
 		"auto.offset.reset": cfg.Offset,
@@ -70,9 +70,9 @@ func (p *Process[V]) Consume() int {
 		go func() {
 			for {
 				//start to consume
-				ev := c.Poll(p.config.PollTimeout)
+				ev := c.Pool(p.config.PollTimeout)
 				switch e := ev.(type) {
-				case *kafka.Message:
+				case *sarama.Message:
 					fmt.Printf("%% Message on %s:\n%s\n", e.TopicPartition, string(e.Value))
 					defaultValue := p.executor.DefaultValue()
 					res := p.executor.DeSerialize(e.Value, defaultValue)
@@ -81,7 +81,7 @@ func (p *Process[V]) Consume() int {
 					/**
 					TODO place for some action
 					*/
-				case kafka.Error:
+				case sarama.ConsumerError:
 					//fmt.Println(p.consumers)
 					p.DeadCount += 1
 					p.removeObject(c) //Remove consumer from list
@@ -108,10 +108,10 @@ func (p *Process[V]) Consume() int {
 
 }
 
-func (p *Process[V]) removeObject(target *kafka.Consumer) {
+func (p *Process[V]) removeObject(target *sarama.Consumer) {
 
 	fmt.Println(target)
-	var newValue []*kafka.Consumer
+	var newValue []*sarama.Consumer
 
 	for _, v := range p.consumers {
 		if v != target {

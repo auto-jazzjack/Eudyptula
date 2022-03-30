@@ -5,11 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0d9e1f42-2835-4293-bd50-2bf0f6d4117e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config/processor_config.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/config/processor_config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/consumer/Excution.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/consumer/Excution.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/consumer/manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/consumer/manager.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/consumer/processor.go" beforeDir="false" afterPath="$PROJECT_DIR$/src/consumer/processor.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/src/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/src/go.sum" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,11 +98,12 @@
       <filePath value="$PROJECT_DIR$" />
       <method v="2" />
     </configuration>
-    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+    <configuration name="go build go-ka" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="go-ka" />
       <working_directory value="$PROJECT_DIR$" />
-      <kind value="FILE" />
-      <directory value="$PROJECT_DIR$" />
+      <go_parameters value="-tags dynamic" />
+      <kind value="DIRECTORY" />
+      <directory value="$PROJECT_DIR$/src" />
       <filePath value="$PROJECT_DIR$/src/main.go" />
       <method v="2" />
     </configuration>
@@ -127,7 +128,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Build.go build go-ka" />
       </list>
     </recent_temporary>
   </component>
@@ -145,6 +146,8 @@
       <workItem from="1648369723149" duration="4946000" />
       <workItem from="1648381388777" duration="242000" />
       <workItem from="1648381633722" duration="2259000" />
+      <workItem from="1648478002406" duration="4452000" />
+      <workItem from="1648645474740" duration="829000" />
     </task>
     <servers />
   </component>
@@ -175,7 +178,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/src/config/processor_config.go</url>
-          <line>39</line>
+          <line>40</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
@@ -187,6 +190,11 @@
           <url>file://$PROJECT_DIR$/src/consumer/manager.go</url>
           <line>23</line>
           <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/src/config/processor_config.go</url>
+          <line>38</line>
+          <option name="timeStamp" value="7" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

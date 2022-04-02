@@ -29,11 +29,11 @@ type ProcessImpl interface {
 	Consume() int
 }
 
-func NewProcess(cfgs config.ProcessorConfigs) *Process {
+func NewProcess(cfgs *config.ProcessorConfigs) *Process {
 	//consumer := newConsumer(cfg)
 	return &Process{
-		configs:   cfgs,
-		consumers: newConsumers(cfgs),
+		configs:   *cfgs,
+		consumers: newConsumers(*cfgs),
 	}
 }
 
@@ -87,7 +87,8 @@ func toMap(nums []int32) map[int32]*sarama.PartitionConsumer {
 	return retv
 }
 
-func (p *Process) Consume() int {
+func (p *Process) Consume() map[int32]int {
+	retv := make(map[int32]int)
 	for _, v := range p.consumers {
 		v.mutex.Lock()
 		cpy := v.deadPartition
@@ -102,6 +103,7 @@ func (p *Process) Consume() int {
 				v.deadPartition = append(v.deadPartition[:idx], v.deadPartition[idx:]...)
 				v.livePartition = append(v.livePartition, itr)
 				v.worker[itr] = &c
+				retv[itr] = retv[itr] + 1
 
 				go func() {
 					for {
@@ -122,6 +124,7 @@ func (p *Process) Consume() int {
 		}
 		v.mutex.Unlock()
 	}
+	return retv
 	/*Count to execute*/
 	/*cnt := p.DeadCount
 	p.consumers.mutex.Lock()
@@ -177,7 +180,7 @@ func (p *Process) Consume() int {
 
 }
 
-func (p *Process) removeObject(target *sarama.Consumer) {
+/*func (p *Process) removeObject(target *sarama.Consumer) {
 
 	fmt.Println(target)
 	var newValue []*sarama.Consumer
@@ -188,4 +191,4 @@ func (p *Process) removeObject(target *sarama.Consumer) {
 		}
 	}
 	p.consumers = newValue
-}
+}*/

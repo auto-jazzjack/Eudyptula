@@ -15,9 +15,11 @@ type ManagerImpl interface {
 
 func NewManager(configs *config.ProcessorConfigs) *Manager {
 
+	v := NewProcess(configs)
+	v.Consume()
 	return &Manager{
 		cfg:        configs,
-		processors: NewProcess(configs),
+		processors: v,
 	}
 }
 

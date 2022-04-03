@@ -92,29 +92,35 @@ func toMap(nums []int32) map[int32]*sarama.PartitionConsumer {
 func (p *Process) Consume() map[int32]int {
 	retv := make(map[int32]int)
 	for _, v := range p.consumers {
-		v.mutex.Lock()
-		cpy := v.deadPartition
-		for idx, itr := range cpy {
 
-			c, err := (*v.client).ConsumePartition(v.topic, itr, sarama.OffsetOldest)
+		cpy := v.deadPartition
+		for idx, partitionNum := range cpy {
+			v.mutex.Lock()
+			c, err := (*v.client).ConsumePartition(v.topic, partitionNum, sarama.OffsetOldest)
 
 			if err != nil {
+				fmt.Println(err)
 				continue
 			} else {
 				//success to revive dead Partition
 				v.deadPartition = append(v.deadPartition[:idx], v.deadPartition[idx:]...)
-				v.livePartition = append(v.livePartition, itr)
-				v.worker[itr] = &c
-				retv[itr] = retv[itr] + 1
+				v.livePartition = append(v.livePartition, partitionNum)
+				v.worker[partitionNum] = &c
+				num := partitionNum
 
+				//retv[partitionNum] = 1
+
+				//fmt.Println(*v.worker[partitionNum])
 				go func() {
+
+					fmt.Println(num)
 					for {
 						select {
-						case msg1 := <-(*v.worker[itr]).Messages():
-							fmt.Println("received", msg1)
-						case msg1 := <-(*v.worker[itr]).Errors():
+						case msg1 := <-(*v.worker[num]).Messages():
+							fmt.Println("received", msg1.Value)
+						case msg1 := <-(*v.worker[num]).Errors():
 							fmt.Println("error", msg1)
-							*v.worker[itr] = nil
+							*v.worker[num] = nil
 							v.livePartition = append(v.livePartition[:1], v.livePartition[2:]...)
 							break
 
@@ -123,8 +129,9 @@ func (p *Process) Consume() map[int32]int {
 				}()
 
 			}
+			v.mutex.Unlock()
 		}
-		v.mutex.Unlock()
+
 	}
 	return retv
 	/*Count to execute*/

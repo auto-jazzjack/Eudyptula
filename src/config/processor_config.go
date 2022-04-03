@@ -18,7 +18,7 @@ type ProcessorConfig struct {
 	Topic          string
 	Concurrency    int
 	PollTimeout    int
-	Target         reflect.Value
+	Target         *reflect.StructField
 }
 
 func NewProcessConfigs() *ProcessorConfigs {
@@ -31,6 +31,8 @@ func NewProcessConfigs() *ProcessorConfigs {
 	var v = &ProcessorConfigs{}
 
 	//var json, err1 = yamlToJson.YAMLToJSON(yamlFile)
+	//vv := reflect.TypeOf("sample.simple_map").Elem()
+	//fmt.Println(vv)
 	fmt.Println(string(yamlFile))
 	err2 := yamlToJson.Unmarshal(yamlFile, v)
 	if err2 != nil {

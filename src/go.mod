@@ -4,10 +4,9 @@ go 1.18
 
 require github.com/Shopify/sarama v1.32.0
 
-require (
-	github.com/ghodss/yaml v1.0.0
-	go.uber.org/dig v1.14.1
-)
+require go.uber.org/dig v1.14.1
+
+require gopkg.in/yaml.v2 v2.4.0
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -26,5 +25,5 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	gopkg.in/yaml.v2 v2.2.3 // indirect
+
 )

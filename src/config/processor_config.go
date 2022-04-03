@@ -2,22 +2,22 @@ package config
 
 import (
 	"fmt"
-	yamlToJson "github.com/ghodss/yaml"
+	yamlToJson "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"reflect"
 )
 
 type ProcessorConfigs struct {
-	Processors map[string]ProcessorConfig
+	Processors map[string]ProcessorConfig `yaml:"Processors"`
 }
 
 type ProcessorConfig struct {
-	BoostrapServer string
-	GroupId        string
-	Offset         string
-	Topic          string
-	Concurrency    int
-	PollTimeout    int
+	BoostrapServer string `yaml:"BoostrapServer"`
+	GroupId        string `yaml:"GroupId"`
+	Offset         string `yaml:"Offset"`
+	Topic          string `yaml:"Topic"`
+	Concurrency    int    `yaml:"Concurrency"`
+	PollTimeout    int    `yaml:"PollTimeout"`
 	Target         *reflect.StructField
 }
 

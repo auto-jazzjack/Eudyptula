@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"go-ka/config"
+	"go-ka/util"
 	"sync"
 	"time"
 )
@@ -103,7 +104,7 @@ func (p *Process) Consume() map[int32]int {
 				continue
 			} else {
 				//success to revive dead Partition
-				v.deadPartition = append(v.deadPartition[:idx], v.deadPartition[idx:]...)
+				v.deadPartition = util.FilterExactValue(v.deadPartition, partitionNum)
 				v.livePartition = append(v.livePartition, partitionNum)
 				v.worker[partitionNum] = &c
 				num := partitionNum

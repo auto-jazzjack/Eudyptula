@@ -10,7 +10,7 @@ import (
 func main() {
 
 	c := config.NewContainer()
-	c.Provide(config.NewProcessConfigs)
+	c.Provide(config.NewProcessConfigs[any])
 	c.Provide(consumer.NewManager[any])
 	c.Provide(controller.NewCluster[any])
 

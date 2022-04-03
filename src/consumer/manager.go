@@ -5,7 +5,7 @@ import (
 )
 
 type Manager[V any] struct {
-	cfg        *config.ProcessorConfigs
+	cfg        *config.ProcessorConfigs[V]
 	processors *Process[V]
 }
 
@@ -13,7 +13,7 @@ type ManagerImpl interface {
 	ExecuteAll() map[int32]int
 }
 
-func NewManager[V any](configs *config.ProcessorConfigs) *Manager[V] {
+func NewManager[V any](configs *config.ProcessorConfigs[V]) *Manager[V] {
 
 	v := NewProcess[V](configs)
 	v.Consume()

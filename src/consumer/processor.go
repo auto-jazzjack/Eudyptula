@@ -11,7 +11,7 @@ import (
 )
 
 type Consumer[V any] struct {
-	config        config.ProcessorConfig
+	config        config.ProcessorConfig[V]
 	client        *sarama.Consumer
 	worker        map[int32]*sarama.PartitionConsumer
 	topic         string
@@ -23,7 +23,7 @@ type Consumer[V any] struct {
 }
 
 type Process[V any] struct {
-	configs   config.ProcessorConfigs
+	configs   config.ProcessorConfigs[V]
 	consumers map[string]*Consumer[V]
 }
 
@@ -31,14 +31,14 @@ type ProcessImpl interface {
 	Consume() int
 }
 
-func NewProcess[V any](cfgs *config.ProcessorConfigs) *Process[V] {
+func NewProcess[V any](cfgs *config.ProcessorConfigs[V]) *Process[V] {
 	return &Process[V]{
 		configs:   *cfgs,
 		consumers: newConsumers[V](cfgs),
 	}
 }
 
-func newConsumers[V any](cfgs *config.ProcessorConfigs) map[string]*Consumer[V] {
+func newConsumers[V any](cfgs *config.ProcessorConfigs[V]) map[string]*Consumer[V] {
 
 	var retv = make(map[string]*Consumer[V])
 

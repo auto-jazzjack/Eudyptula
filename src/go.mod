@@ -6,7 +6,7 @@ require github.com/Shopify/sarama v1.32.0
 
 require go.uber.org/dig v1.14.1
 
-require gopkg.in/yaml.v2 v2.4.0
+require gopkg.in/yaml.v3 latest
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

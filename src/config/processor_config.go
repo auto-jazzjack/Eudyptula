@@ -2,46 +2,44 @@ package config
 
 import (
 	"fmt"
-	yamlToJson "gopkg.in/yaml.v2"
+	"go-ka/logic"
+	yaml "gopkg.in/yaml.v3"
 	"io/ioutil"
+	"reflect"
 )
 
-type ProcessorConfigs struct {
-	Processors map[string]ProcessorConfig `yaml:"Processors"`
+type ProcessorConfigs[V any] struct {
+	Processors map[string]ProcessorConfig[V] `yaml:"Processors"`
 }
 
-type ReflectionString string
-
-func NewReflectionString(v string) *ReflectionString {
-	var retv ReflectionString
-	retv = ReflectionString(v)
-	return &retv
+type ProcessorConfig[V any] struct {
+	BoostrapServer string            `yaml:"BoostrapServer"`
+	GroupId        string            `yaml:"GroupId"`
+	Offset         string            `yaml:"Offset"`
+	Topic          string            `yaml:"Topic"`
+	Concurrency    int               `yaml:"Concurrency"`
+	PollTimeout    int               `yaml:"PollTimeout"`
+	Target         LogicContainer[V] `yaml:"Target"`
 }
 
-type ProcessorConfig struct {
-	BoostrapServer string           `yaml:"BoostrapServer"`
-	GroupId        string           `yaml:"GroupId"`
-	Offset         string           `yaml:"Offset"`
-	Topic          string           `yaml:"Topic"`
-	Concurrency    int              `yaml:"Concurrency"`
-	PollTimeout    int              `yaml:"PollTimeout"`
-	Target         ReflectionString `yaml:"Target"`
+type LogicContainer[V any] struct {
+	logic *logic.Logic[V]
 }
 
-func NewProcessConfigs() *ProcessorConfigs {
+func NewProcessConfigs[V any]() *ProcessorConfigs[V] {
 	yamlFile, err := ioutil.ReadFile("./src/application.yaml")
 	if err != nil {
 		fmt.Println(err)
 		panic("yamlFile.Get err")
 	}
 
-	var v = &ProcessorConfigs{}
+	var v = &ProcessorConfigs[V]{}
 
 	//var json, err1 = yamlToJson.YAMLToJSON(yamlFile)
 	//vv := reflect.TypeOf("sample.simple_map").Elem()
 	//fmt.Println(vv)
 	fmt.Println(string(yamlFile))
-	err2 := yamlToJson.Unmarshal(yamlFile, v)
+	err2 := yaml.Unmarshal(yamlFile, v)
 	if err2 != nil {
 		panic(err2)
 	}
@@ -49,9 +47,10 @@ func NewProcessConfigs() *ProcessorConfigs {
 	return v
 }
 
-func (ut *ReflectionString) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var v string
-	v = string(*ut)
-	fmt.Println(v)
+func (target LogicContainer[V]) UnmarshalYAML(value *yaml.Node) error {
+
+	//v = string(target)
+	a := reflect.ValueOf(value.Value)
+	fmt.Println(a)
 	return nil
 }

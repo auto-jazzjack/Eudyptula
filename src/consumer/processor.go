@@ -45,12 +45,12 @@ func newConsumers(cfgs *config.ProcessorConfigs) map[string]*Consumer {
 
 	for k, v := range cfgs.Processors {
 
-		config := sarama.NewConfig()
-		config.Consumer.Return.Errors = true
-		config.Consumer.Fetch.Max = 50
-		config.Consumer.MaxProcessingTime = time.Duration(v.PollTimeout * 1000 * 1000) //milli to nao
+		newConfig := sarama.NewConfig()
+		newConfig.Consumer.Return.Errors = true
+		newConfig.Consumer.Fetch.Max = 50
+		newConfig.Consumer.MaxProcessingTime = time.Duration(v.PollTimeout * 1000 * 1000) //milli to nao
 
-		c, err := sarama.NewConsumer([]string{v.BoostrapServer}, config)
+		c, err := sarama.NewConsumer([]string{v.BoostrapServer}, newConfig)
 
 		if err != nil {
 			panic(err)
@@ -95,7 +95,7 @@ func (p *Process) Consume() map[int32]int {
 	for _, v := range p.consumers {
 
 		cpy := v.deadPartition
-		for idx, partitionNum := range cpy {
+		for _, partitionNum := range cpy {
 			v.mutex.Lock()
 			c, err := (*v.client).ConsumePartition(v.topic, partitionNum, sarama.OffsetOldest)
 

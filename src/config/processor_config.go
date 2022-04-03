@@ -4,21 +4,28 @@ import (
 	"fmt"
 	yamlToJson "gopkg.in/yaml.v2"
 	"io/ioutil"
-	"reflect"
 )
 
 type ProcessorConfigs struct {
 	Processors map[string]ProcessorConfig `yaml:"Processors"`
 }
 
+type ReflectionString string
+
+func NewReflectionString(v string) *ReflectionString {
+	var retv ReflectionString
+	retv = ReflectionString(v)
+	return &retv
+}
+
 type ProcessorConfig struct {
-	BoostrapServer string `yaml:"BoostrapServer"`
-	GroupId        string `yaml:"GroupId"`
-	Offset         string `yaml:"Offset"`
-	Topic          string `yaml:"Topic"`
-	Concurrency    int    `yaml:"Concurrency"`
-	PollTimeout    int    `yaml:"PollTimeout"`
-	Target         *reflect.StructField
+	BoostrapServer string           `yaml:"BoostrapServer"`
+	GroupId        string           `yaml:"GroupId"`
+	Offset         string           `yaml:"Offset"`
+	Topic          string           `yaml:"Topic"`
+	Concurrency    int              `yaml:"Concurrency"`
+	PollTimeout    int              `yaml:"PollTimeout"`
+	Target         ReflectionString `yaml:"Target"`
 }
 
 func NewProcessConfigs() *ProcessorConfigs {
@@ -40,4 +47,11 @@ func NewProcessConfigs() *ProcessorConfigs {
 	}
 
 	return v
+}
+
+func (ut *ReflectionString) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var v string
+	v = string(*ut)
+	fmt.Println(v)
+	return nil
 }

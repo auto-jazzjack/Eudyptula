@@ -33,27 +33,29 @@ func NewProcess(cfgs *config.ProcessorConfigs) *Process {
 	//consumer := newConsumer(cfg)
 	return &Process{
 		configs:   *cfgs,
-		consumers: newConsumers(*cfgs),
+		consumers: newConsumers(cfgs),
 	}
 }
 
-func newConsumers(cfgs config.ProcessorConfigs) map[string]*Consumer {
+func newConsumers(cfgs *config.ProcessorConfigs) map[string]*Consumer {
 	//var consumers []*sarama.Consumer
 
-	var retv map[string]*Consumer
+	var retv = make(map[string]*Consumer)
 
 	for k, v := range cfgs.Processors {
 
 		config := sarama.NewConfig()
 		config.Consumer.Return.Errors = true
 		config.Consumer.Fetch.Max = 50
-		config.Consumer.MaxProcessingTime = time.Duration(v.PollTimeout / 1000 / 1000) //milli to nao
+		config.Consumer.MaxProcessingTime = time.Duration(v.PollTimeout * 1000 * 1000) //milli to nao
+
 		c, err := sarama.NewConsumer([]string{v.BoostrapServer}, config)
-		partitions, err2 := c.Partitions(v.Topic)
 
 		if err != nil {
 			panic(err)
 		}
+
+		partitions, err2 := c.Partitions(v.Topic)
 
 		if err2 != nil {
 			panic(err2)
@@ -62,10 +64,10 @@ func newConsumers(cfgs config.ProcessorConfigs) map[string]*Consumer {
 		csm := &Consumer{
 			config:        v,
 			client:        &c,
-			worker:        toMap(partitions),
+			worker:        toMap(partitions), //all dead(nil) for init
 			topic:         v.Topic,
 			allPartition:  partitions,
-			livePartition: []int32{}, ///[]int32
+			livePartition: []int32{}, ///[]int32 empty live
 			deadPartition: partitions,
 			mutex:         &sync.Mutex{}, /**guarantee atomic for consumer*/
 
@@ -79,7 +81,7 @@ func newConsumers(cfgs config.ProcessorConfigs) map[string]*Consumer {
 }
 
 func toMap(nums []int32) map[int32]*sarama.PartitionConsumer {
-	var retv map[int32]*sarama.PartitionConsumer
+	var retv = make(map[int32]*sarama.PartitionConsumer)
 
 	for _, v := range nums {
 		retv[v] = nil

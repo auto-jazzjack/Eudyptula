@@ -6,24 +6,20 @@ import (
 
 type Manager struct {
 	cfg        *config.ProcessorConfigs
-	processors map[string]*Process
+	processors *Process
 }
 
 type ManagerImpl interface {
-	ExecuteAll() map[string]int
+	ExecuteAll() map[int32]int
 }
 
 func NewManager(configs *config.ProcessorConfigs) *Manager {
 
-	results := make(map[string]*Process)
-
-	for k, v := range configs.Processors {
-		results[k] = NewProcess(v)
-	}
-
+	v := NewProcess(configs)
+	v.Consume()
 	return &Manager{
 		cfg:        configs,
-		processors: results,
+		processors: v,
 	}
 }
 
@@ -32,10 +28,9 @@ func NewManager(configs *config.ProcessorConfigs) *Manager {
 Execute all consumer
 @Return : map[string]int, Key: Name of processor, Value : executed concurrency
 */
-func (m *Manager) ExecuteAll() map[string]int {
-	var retv = make(map[string]int)
-	for k, v := range m.processors {
-		retv[k] = v.Consume()
-	}
+func (m *Manager) ExecuteAll() map[int32]int {
+	var retv = make(map[int32]int)
+	m.processors.Consume()
+
 	return retv
 }

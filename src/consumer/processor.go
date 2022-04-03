@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"go-ka/config"
+	"go-ka/logic"
 	"go-ka/util"
 	"sync"
 	"time"
 )
 
-type Consumer struct {
+type Consumer[V any] struct {
 	config        config.ProcessorConfig
 	client        *sarama.Consumer
 	worker        map[int32]*sarama.PartitionConsumer
@@ -18,30 +19,28 @@ type Consumer struct {
 	livePartition []int32 ///[]int32
 	deadPartition []int32
 	mutex         *sync.Mutex /**guarantee atomic for consumer*/
-
+	logic         logic.Logic[V]
 }
 
-type Process struct {
+type Process[V any] struct {
 	configs   config.ProcessorConfigs
-	consumers map[string]*Consumer
+	consumers map[string]*Consumer[V]
 }
 
 type ProcessImpl interface {
 	Consume() int
 }
 
-func NewProcess(cfgs *config.ProcessorConfigs) *Process {
-	//consumer := newConsumer(cfg)
-	return &Process{
+func NewProcess[V any](cfgs *config.ProcessorConfigs) *Process[V] {
+	return &Process[V]{
 		configs:   *cfgs,
-		consumers: newConsumers(cfgs),
+		consumers: newConsumers[V](cfgs),
 	}
 }
 
-func newConsumers(cfgs *config.ProcessorConfigs) map[string]*Consumer {
-	//var consumers []*sarama.Consumer
+func newConsumers[V any](cfgs *config.ProcessorConfigs) map[string]*Consumer[V] {
 
-	var retv = make(map[string]*Consumer)
+	var retv = make(map[string]*Consumer[V])
 
 	for k, v := range cfgs.Processors {
 
@@ -62,7 +61,7 @@ func newConsumers(cfgs *config.ProcessorConfigs) map[string]*Consumer {
 			panic(err2)
 		}
 
-		csm := &Consumer{
+		csm := &Consumer[V]{
 			config:        v,
 			client:        &c,
 			worker:        toMap(partitions), //all dead(nil) for init
@@ -90,7 +89,7 @@ func toMap(nums []int32) map[int32]*sarama.PartitionConsumer {
 	return retv
 }
 
-func (p *Process) Consume() map[int32]int {
+func (p *Process[V]) Consume() map[int32]int {
 	retv := make(map[int32]int)
 	for _, v := range p.consumers {
 
@@ -109,9 +108,6 @@ func (p *Process) Consume() map[int32]int {
 				v.worker[partitionNum] = &c
 				num := partitionNum
 
-				//retv[partitionNum] = 1
-
-				//fmt.Println(*v.worker[partitionNum])
 				go func() {
 
 					fmt.Println(num)
@@ -119,6 +115,9 @@ func (p *Process) Consume() map[int32]int {
 						select {
 						case msg1 := <-(*v.worker[num]).Messages():
 							fmt.Println("received", msg1.Value)
+							res := v.logic.Deserialize(msg1.Value)
+							fmt.Println(res)
+							//v.logic.DoAction(res.(V))
 						case msg1 := <-(*v.worker[num]).Errors():
 							fmt.Println("error", msg1)
 							*v.worker[num] = nil
@@ -135,70 +134,5 @@ func (p *Process) Consume() map[int32]int {
 
 	}
 	return retv
-	/*Count to execute*/
-	/*cnt := p.DeadCount
-	p.consumers.mutex.Lock()
-
-	for i := 0; i < cnt; i++ {
-
-		//Create one consumer
-		c := newConsumer(p.config)
-
-		//register to consumer
-		p.consumers = append(p.consumers, c)
-		fmt.Println(p.consumers)
-
-		(*c).Partitions()
-		go func() {
-			for {
-				//start to consume
-
-				ev := (*c).ConsumePartition()
-				v1, _ := (*c).ConsumePartition()
-				v1.Messages()
-				switch e := ev.(type) {
-				case *sarama.Message:
-					fmt.Printf("%% Message on %s:\n%s\n", e.TopicPartition, string(e.Value))
-
-
-					//  TODO place for some action
-
-				case sarama.Error:
-					//fmt.Println(p.consumers)
-					p.DeadCount += 1
-					p.removeObject(c) //Remove consumer from list
-
-					err2 := c.Close()
-					if err2 != nil {
-						fmt.Println(err2)
-					}
-					fmt.Println(e)
-				}
-			}
-		}()
-
-	}
-	p.mutex.Unlock()
-	p.DeadCount = p.config.Concurrency - len(p.consumers)
-
-	if cnt > 0 {
-
-		return cnt
-	} else {
-		return 0
-	}*/
 
 }
-
-/*func (p *Process) removeObject(target *sarama.Consumer) {
-
-	fmt.Println(target)
-	var newValue []*sarama.Consumer
-
-	for _, v := range p.consumers {
-		if v != target {
-			newValue = append(newValue, v)
-		}
-	}
-	p.consumers = newValue
-}*/

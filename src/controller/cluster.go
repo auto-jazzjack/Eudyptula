@@ -9,12 +9,12 @@ import (
 
 const REVIVE = "/api/v1/cluster/revive"
 
-type Cluster struct {
-	manager *consumer.Manager
+type Cluster[V any] struct {
+	manager *consumer.Manager[V]
 }
 
-func NewCluster(manager *consumer.Manager) *Cluster {
-	return &Cluster{
+func NewCluster[V any](manager *consumer.Manager[V]) *Cluster[V] {
+	return &Cluster[V]{
 		manager: manager,
 	}
 }
@@ -22,7 +22,7 @@ func NewCluster(manager *consumer.Manager) *Cluster {
 /**
 Actually request is usless for this phase
 */
-func (c *Cluster) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (c *Cluster[V]) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
 	result, err := json.Marshal(c.manager.ExecuteAll())
 	if err != nil {

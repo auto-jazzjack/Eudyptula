@@ -4,6 +4,7 @@ import (
 	"fmt"
 	yamlToJson "github.com/ghodss/yaml"
 	"io/ioutil"
+	"reflect"
 )
 
 type ProcessorConfigs struct {
@@ -17,6 +18,7 @@ type ProcessorConfig struct {
 	Topic          string
 	Concurrency    int
 	PollTimeout    int
+	Target         reflect.Value
 }
 
 func NewProcessConfigs() *ProcessorConfigs {

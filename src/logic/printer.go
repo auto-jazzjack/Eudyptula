@@ -3,16 +3,15 @@ package logic
 import (
 	"encoding/json"
 	"fmt"
-	"go-ka/sample"
 )
 
 type Printer[V any] struct {
 }
 
-func NewPrinter[V any]() *Printer[V] {
-	return &Printer[V]{}
+func NewPrinter[V any]() Logic[V] {
+	return Printer[V]{}
 }
-func (p *Printer[V]) Deserialize(bytes []byte) any {
+func (p Printer[V]) Deserialize(bytes []byte) *V {
 	retv := p.DefaultValue()
 	err := json.Unmarshal(bytes, &retv)
 	if err != nil {
@@ -21,10 +20,10 @@ func (p *Printer[V]) Deserialize(bytes []byte) any {
 	return retv
 }
 
-func (p *Printer[V]) DoAction(v any) {
+func (p Printer[V]) DoAction(v V) {
 	fmt.Println(v)
 }
 
-func (p *Printer[V]) DefaultValue() any {
-	return sample.Sample{}
+func (p Printer[V]) DefaultValue() *V {
+	return nil
 }

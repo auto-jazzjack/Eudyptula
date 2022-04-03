@@ -1,7 +1,7 @@
 package logic
 
 type Logic[V any] interface {
-	Deserialize([]byte) V
+	Deserialize([]byte) *V
 	DoAction(V)
-	DefaultValue() V
+	DefaultValue() *V
 }

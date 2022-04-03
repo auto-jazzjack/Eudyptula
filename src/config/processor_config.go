@@ -23,7 +23,7 @@ type ProcessorConfig[V any] struct {
 }
 
 type LogicContainer[V any] struct {
-	logic *logic.Logic[V]
+	logic logic.Logic[V]
 }
 
 func NewProcessConfigs[V any]() *ProcessorConfigs[V] {
@@ -47,10 +47,13 @@ func NewProcessConfigs[V any]() *ProcessorConfigs[V] {
 	return v
 }
 
-func (target LogicContainer[V]) UnmarshalYAML(value *yaml.Node) error {
+func (target *LogicContainer[V]) UnmarshalYAML(value *yaml.Node) error {
 
+	//reflect.New(value.Value)
 	//v = string(target)
 	a := reflect.ValueOf(value.Value)
+	fmt.Println(value.Value)
 	fmt.Println(a)
+	target.logic = logic.NewPrinter[V]()
 	return nil
 }

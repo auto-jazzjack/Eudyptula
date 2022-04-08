@@ -4,23 +4,23 @@ import (
 	"fmt"
 )
 
-type Printer[V string] struct {
+type Printer struct {
 }
 
-func NewPrinter[V string]() Logic[string] {
-	return Printer[string]{}
+func NewPrinter() Logic[string] {
+	return Printer{}
 }
-func (p Printer[string]) Deserialize(bytes []byte) *string {
+func (p Printer) Deserialize(bytes []byte) *string {
 
 	v := string(bytes)
 	return &v
 	//return string(bytes)
 }
 
-func (p Printer[string]) DoAction(v string) {
+func (p Printer) DoAction(v string) {
 	fmt.Println(v)
 }
 
-func (p Printer[string]) DefaultValue() *string {
+func (p Printer) DefaultValue() *string {
 	return nil
 }

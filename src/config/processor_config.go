@@ -8,7 +8,7 @@ import (
 )
 
 var printerMapping = map[string]logic.Logic[any]{
-	"logic.Printer": logic.Logic[string](logic.NewPrinter[any]()),
+	"logic.Printer": logic.Logic[any](logic.NewPrinter()),
 }
 
 type ProcessorConfigs[V any] struct {

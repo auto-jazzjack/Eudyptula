@@ -8,7 +8,7 @@ import (
 )
 
 var printerMapping = map[string]logic.Logic[any]{
-	"logic.Printer": logic.NewPrinter[any](),
+	"logic.Printer": logic.Logic[string](logic.NewPrinter[any]()),
 }
 
 type ProcessorConfigs[V any] struct {
@@ -22,11 +22,11 @@ type ProcessorConfig[V any] struct {
 	Topic          string         `yaml:"Topic"`
 	Concurrency    int            `yaml:"Concurrency"`
 	PollTimeout    int            `yaml:"PollTimeout"`
-	Target         LogicContainer `yaml:"Target"`
+	LogicContainer LogicContainer `yaml:"LogicContainer"`
 }
 
 type LogicContainer struct {
-	logic logic.Logic[any]
+	Logic logic.Logic[any]
 }
 
 func NewProcessConfigs[V any]() *ProcessorConfigs[V] {
@@ -55,9 +55,9 @@ func (target *LogicContainer) UnmarshalYAML(value *yaml.Node) error {
 	//reflect.New(value.Value)
 	//v = string(target)
 	//a := reflect.ValueOf(value.Value)
-	target.logic = logic.Logic[any](logic.Logic[any](printerMapping[value.Value]))
-	if target.logic == nil {
-		panic("No such Logic")
+	target.Logic = logic.Logic[any](logic.Logic[any](printerMapping[value.Value]))
+	if target.Logic == nil {
+		panic("No such LogicContainer")
 	}
 	return nil
 }

@@ -6,4 +6,4 @@ Processors:
     Topic: hellow-world
     Concurrency: 1
     PollTimeout: 1000
-    Target: logic.Printer
+    LogicContainer: logic.Printer

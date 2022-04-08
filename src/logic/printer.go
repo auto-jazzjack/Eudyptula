@@ -1,29 +1,26 @@
 package logic
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
-type Printer[V any] struct {
+type Printer[V string] struct {
 }
 
-func NewPrinter[V any]() Logic[V] {
-	return Printer[V]{}
+func NewPrinter[V string]() Logic[string] {
+	return Printer[string]{}
 }
-func (p Printer[V]) Deserialize(bytes []byte) *V {
-	retv := p.DefaultValue()
-	err := json.Unmarshal(bytes, &retv)
-	if err != nil {
-		return nil
-	}
-	return retv
+func (p Printer[string]) Deserialize(bytes []byte) *string {
+
+	v := string(bytes)
+	return &v
+	//return string(bytes)
 }
 
-func (p Printer[V]) DoAction(v V) {
+func (p Printer[string]) DoAction(v string) {
 	fmt.Println(v)
 }
 
-func (p Printer[V]) DefaultValue() *V {
+func (p Printer[string]) DefaultValue() *string {
 	return nil
 }

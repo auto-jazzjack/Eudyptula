@@ -19,7 +19,7 @@ type Consumer[V any] struct {
 	livePartition []int32 ///[]int32
 	deadPartition []int32
 	mutex         *sync.Mutex /**guarantee atomic for consumer*/
-	logic         logic.Logic[V]
+	logic         logic.Logic[any]
 }
 
 type Process[V any] struct {
@@ -70,7 +70,7 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V]) map[string]*Consumer[
 			livePartition: []int32{}, ///[]int32 empty live
 			deadPartition: partitions,
 			mutex:         &sync.Mutex{}, /**guarantee atomic for consumer*/
-
+			logic:         logic.Logic[any](v.LogicContainer.Logic),
 		}
 		retv[k] = csm
 	}
@@ -115,9 +115,9 @@ func (p *Process[V]) Consume() map[int32]int {
 						select {
 						case msg1 := <-(*v.worker[num]).Messages():
 							fmt.Println("received", msg1.Value)
-							res := v.logic.Deserialize(msg1.Value)
-							fmt.Println(res)
-							//v.logic.DoAction(res.(V))
+							res := (v.logic.Deserialize)(msg1.Value)
+							//fmt.Println(res)
+							v.logic.DoAction(res)
 						case msg1 := <-(*v.worker[num]).Errors():
 							fmt.Println("error", msg1)
 							*v.worker[num] = nil

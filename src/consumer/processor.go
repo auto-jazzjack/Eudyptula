@@ -114,7 +114,6 @@ func (p *Process[V]) Consume() map[int32]int {
 					for {
 						select {
 						case msg1 := <-(*v.worker[num]).Messages():
-							fmt.Println("received", msg1.Value)
 							res := (v.logic.Deserialize)(msg1.Value)
 							//fmt.Println(res)
 							v.logic.DoAction(res)

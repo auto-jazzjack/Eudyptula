@@ -10,11 +10,11 @@ import (
 func main() {
 
 	c := config.NewContainer()
-	c.Provide(config.NewProcessConfigs)
-	c.Provide(consumer.NewManager)
-	c.Provide(controller.NewCluster)
+	c.Provide(config.NewProcessConfigs[any])
+	c.Provide(consumer.NewManager[any])
+	c.Provide(controller.NewCluster[any])
 
-	c.Invoke(func(cluster *controller.Cluster) {
+	c.Invoke(func(cluster *controller.Cluster[any]) {
 		http.HandleFunc(controller.REVIVE, cluster.ServeHTTP)
 	})
 

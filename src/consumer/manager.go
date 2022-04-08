@@ -4,20 +4,20 @@ import (
 	"go-ka/config"
 )
 
-type Manager struct {
-	cfg        *config.ProcessorConfigs
-	processors *Process
+type Manager[V any] struct {
+	cfg        *config.ProcessorConfigs[V]
+	processors *Process[V]
 }
 
 type ManagerImpl interface {
 	ExecuteAll() map[int32]int
 }
 
-func NewManager(configs *config.ProcessorConfigs) *Manager {
+func NewManager[V any](configs *config.ProcessorConfigs[V]) *Manager[V] {
 
-	v := NewProcess(configs)
+	v := NewProcess[V](configs)
 	v.Consume()
-	return &Manager{
+	return &Manager[V]{
 		cfg:        configs,
 		processors: v,
 	}
@@ -28,7 +28,7 @@ func NewManager(configs *config.ProcessorConfigs) *Manager {
 Execute all consumer
 @Return : map[string]int, Key: Name of processor, Value : executed concurrency
 */
-func (m *Manager) ExecuteAll() map[int32]int {
+func (m *Manager[V]) ExecuteAll() map[int32]int {
 	var retv = make(map[int32]int)
 	m.processors.Consume()
 

@@ -5,25 +5,28 @@ import (
 	"go-ka/logic"
 	yaml "gopkg.in/yaml.v3"
 	"io/ioutil"
-	"reflect"
 )
+
+var printerMapping = map[string]logic.Logic[any]{
+	"logic.Printer": logic.NewPrinter[any](),
+}
 
 type ProcessorConfigs[V any] struct {
 	Processors map[string]ProcessorConfig[V] `yaml:"Processors"`
 }
 
 type ProcessorConfig[V any] struct {
-	BoostrapServer string            `yaml:"BoostrapServer"`
-	GroupId        string            `yaml:"GroupId"`
-	Offset         string            `yaml:"Offset"`
-	Topic          string            `yaml:"Topic"`
-	Concurrency    int               `yaml:"Concurrency"`
-	PollTimeout    int               `yaml:"PollTimeout"`
-	Target         LogicContainer[V] `yaml:"Target"`
+	BoostrapServer string         `yaml:"BoostrapServer"`
+	GroupId        string         `yaml:"GroupId"`
+	Offset         string         `yaml:"Offset"`
+	Topic          string         `yaml:"Topic"`
+	Concurrency    int            `yaml:"Concurrency"`
+	PollTimeout    int            `yaml:"PollTimeout"`
+	Target         LogicContainer `yaml:"Target"`
 }
 
-type LogicContainer[V any] struct {
-	logic logic.Logic[V]
+type LogicContainer struct {
+	logic logic.Logic[any]
 }
 
 func NewProcessConfigs[V any]() *ProcessorConfigs[V] {
@@ -47,13 +50,14 @@ func NewProcessConfigs[V any]() *ProcessorConfigs[V] {
 	return v
 }
 
-func (target *LogicContainer[V]) UnmarshalYAML(value *yaml.Node) error {
+func (target *LogicContainer) UnmarshalYAML(value *yaml.Node) error {
 
 	//reflect.New(value.Value)
 	//v = string(target)
-	a := reflect.ValueOf(value.Value)
-	fmt.Println(value.Value)
-	fmt.Println(a)
-	target.logic = logic.NewPrinter[V]()
+	//a := reflect.ValueOf(value.Value)
+	target.logic = logic.Logic[any](logic.Logic[any](printerMapping[value.Value]))
+	if target.logic == nil {
+		panic("No such Logic")
+	}
 	return nil
 }

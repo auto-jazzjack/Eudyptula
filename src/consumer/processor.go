@@ -46,7 +46,7 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V]) map[string]*Consumer[
 
 		newConfig := sarama.NewConfig()
 		newConfig.Consumer.Return.Errors = true
-		newConfig.Consumer.Fetch.Max = 50
+		newConfig.Consumer.Fetch.Max = v.FetchSize
 		newConfig.Consumer.MaxProcessingTime = time.Duration(v.PollTimeout * 1000 * 1000) //milli to nao
 
 		c, err := sarama.NewConsumer([]string{v.BoostrapServer}, newConfig)
@@ -74,8 +74,6 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V]) map[string]*Consumer[
 		}
 		retv[k] = csm
 	}
-
-	//consumers = append(consumers, c)
 
 	return retv
 }

@@ -23,6 +23,7 @@ type ProcessorConfig[V any] struct {
 	Concurrency    int            `yaml:"Concurrency"`
 	PollTimeout    int            `yaml:"PollTimeout"`
 	LogicContainer LogicContainer `yaml:"LogicContainer"`
+	FetchSize      int32          `yaml:"FetchSize"`
 }
 
 type LogicContainer struct {

@@ -21,7 +21,7 @@ type ProcessorConfig[V any] struct {
 	GroupId        string         `yaml:"GroupId"`
 	Offset         string         `yaml:"Offset"`
 	Topic          string         `yaml:"Topic"`
-	Concurrency    int            `yaml:"Concurrency"`
+	Concurrency    int32          `yaml:"Concurrency"`
 	PollTimeout    int            `yaml:"PollTimeout"`
 	LogicContainer LogicContainer `yaml:"LogicContainer"`
 	FetchSize      int32          `yaml:"FetchSize"`

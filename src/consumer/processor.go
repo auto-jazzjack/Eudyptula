@@ -6,6 +6,7 @@ import (
 	"go-ka/config"
 	"go-ka/logic"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -14,8 +15,8 @@ type Consumer[V any] struct {
 	worker      *cluster.Consumer
 	groupId     string
 	topic       string
-	live        int
-	concurrency int
+	live        int32
+	concurrency int32
 	mutex       *sync.Mutex /**guarantee atomic for consumer*/
 	logic       logic.Logic[any]
 }
@@ -90,8 +91,7 @@ func (p *Process[V]) Consume() map[int32]int {
 	for _, v := range p.consumers {
 
 		numToRevive := v.concurrency - v.live
-		for i := 0; i < numToRevive; i++ {
-			v.mutex.Lock()
+		for i := int32(0); i < numToRevive; i++ {
 			{
 
 				go func() {
@@ -100,7 +100,7 @@ func (p *Process[V]) Consume() map[int32]int {
 						select {
 						case msg1 := <-(*v.worker).Messages():
 							res := (v.logic.Deserialize)(msg1.Value)
-							//fmt.Println(res)
+							atomic.AddInt32(&v.live, 1)
 							v.logic.DoAction(res)
 						case msg1 := <-(*v.worker).Errors():
 							fmt.Println("error", msg1)
@@ -108,6 +108,7 @@ func (p *Process[V]) Consume() map[int32]int {
 							if err != nil {
 								fmt.Printf("%s", err)
 							}
+							atomic.AddInt32(&v.live, -1)
 							break
 
 						}
@@ -115,7 +116,6 @@ func (p *Process[V]) Consume() map[int32]int {
 				}()
 
 			}
-			v.mutex.Unlock()
 		}
 
 	}

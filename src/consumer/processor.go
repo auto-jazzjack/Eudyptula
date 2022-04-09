@@ -119,8 +119,14 @@ func (p *Process[V]) Consume() map[int32]int {
 							v.logic.DoAction(res)
 						case msg1 := <-(*v.worker[num]).Errors():
 							fmt.Println("error", msg1)
+							err := (*v.worker[num]).Close()
+							if err != nil {
+								fmt.Printf("%s", err)
+							}
 							*v.worker[num] = nil
+							v.mutex.Lock()
 							v.livePartition = append(v.livePartition[:1], v.livePartition[2:]...)
+							v.mutex.Unlock()
 							break
 
 						}

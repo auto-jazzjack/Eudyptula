@@ -16,7 +16,7 @@ type ManagerImpl interface {
 func NewManager[V any](configs *config.ProcessorConfigs[V]) *Manager[V] {
 
 	v := NewProcess[V](configs)
-	v.Consume()
+	//v.Consume()
 	return &Manager[V]{
 		cfg:        configs,
 		processors: v,
@@ -28,9 +28,6 @@ func NewManager[V any](configs *config.ProcessorConfigs[V]) *Manager[V] {
 Execute all consumer
 @Return : map[string]int, Key: Name of processor, Value : executed concurrency
 */
-func (m *Manager[V]) ExecuteAll() map[int32]int {
-	var retv = make(map[int32]int)
-	m.processors.Consume()
-
-	return retv
+func (m *Manager[V]) ExecuteAll() map[string]int32 {
+	return m.processors.Consume()
 }

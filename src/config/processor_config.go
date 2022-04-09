@@ -13,6 +13,7 @@ var printerMapping = map[string]logic.Logic[any]{
 
 type ProcessorConfigs[V any] struct {
 	Processors map[string]ProcessorConfig[V] `yaml:"Processors"`
+	Zookeeper  []string                      `yaml:"Zookeeper"`
 }
 
 type ProcessorConfig[V any] struct {
@@ -20,9 +21,10 @@ type ProcessorConfig[V any] struct {
 	GroupId        string         `yaml:"GroupId"`
 	Offset         string         `yaml:"Offset"`
 	Topic          string         `yaml:"Topic"`
-	Concurrency    int            `yaml:"Concurrency"`
+	Concurrency    int32          `yaml:"Concurrency"`
 	PollTimeout    int            `yaml:"PollTimeout"`
 	LogicContainer LogicContainer `yaml:"LogicContainer"`
+	FetchSize      int32          `yaml:"FetchSize"`
 }
 
 type LogicContainer struct {

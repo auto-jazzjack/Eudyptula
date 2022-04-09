@@ -1,3 +1,5 @@
+Zookeeper:
+  - 127.0.0.1
 Processors:
   myFirstProcessor:
     BoostrapServer: localhost:9092

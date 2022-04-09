@@ -13,6 +13,7 @@ var printerMapping = map[string]logic.Logic[any]{
 
 type ProcessorConfigs[V any] struct {
 	Processors map[string]ProcessorConfig[V] `yaml:"Processors"`
+	Zookeeper  []string
 }
 
 type ProcessorConfig[V any] struct {

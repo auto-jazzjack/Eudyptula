@@ -2,24 +2,22 @@ package consumer
 
 import (
 	"fmt"
-	"github.com/Shopify/sarama"
+	cluster "github.com/bsm/sarama-cluster"
 	"go-ka/config"
 	"go-ka/logic"
-	"go-ka/util"
 	"sync"
 	"time"
 )
 
 type Consumer[V any] struct {
-	config        config.ProcessorConfig[V]
-	client        *sarama.Consumer
-	worker        map[int32]*sarama.PartitionConsumer
-	topic         string
-	allPartition  []int32
-	livePartition []int32 ///[]int32
-	deadPartition []int32
-	mutex         *sync.Mutex /**guarantee atomic for consumer*/
-	logic         logic.Logic[any]
+	config      config.ProcessorConfig[V]
+	worker      *cluster.Consumer
+	groupId     string
+	topic       string
+	live        int
+	concurrency int
+	mutex       *sync.Mutex /**guarantee atomic for consumer*/
+	logic       logic.Logic[any]
 }
 
 type Process[V any] struct {
@@ -34,43 +32,43 @@ type ProcessImpl interface {
 func NewProcess[V any](cfgs *config.ProcessorConfigs[V]) *Process[V] {
 	return &Process[V]{
 		configs:   *cfgs,
-		consumers: newConsumers[V](cfgs),
+		consumers: newConsumers[V](cfgs, cfgs.Zookeeper),
 	}
 }
 
-func newConsumers[V any](cfgs *config.ProcessorConfigs[V]) map[string]*Consumer[V] {
+func newConsumers[V any](cfgs *config.ProcessorConfigs[V], zkper []string) map[string]*Consumer[V] {
 
 	var retv = make(map[string]*Consumer[V])
 
 	for k, v := range cfgs.Processors {
 
-		newConfig := sarama.NewConfig()
+		newConfig := &cluster.Config{}
 		newConfig.Consumer.Return.Errors = true
 		newConfig.Consumer.Fetch.Max = v.FetchSize
+		//cfg..Return.Notifications = true
 		newConfig.Consumer.MaxProcessingTime = time.Duration(v.PollTimeout * 1000 * 1000) //milli to nao
 
-		c, err := sarama.NewConsumer([]string{v.BoostrapServer}, newConfig)
+		c, err := cluster.NewConsumer([]string{v.BoostrapServer}, zkper, v.GroupId, []string{v.Topic}, newConfig)
 
 		if err != nil {
 			panic(err)
 		}
 
-		partitions, err2 := c.Partitions(v.Topic)
-
-		if err2 != nil {
+		/*if err2 != nil {
 			panic(err2)
-		}
+		}*/
 
 		csm := &Consumer[V]{
-			config:        v,
-			client:        &c,
-			worker:        toMap(partitions), //all dead(nil) for init
-			topic:         v.Topic,
-			allPartition:  partitions,
-			livePartition: []int32{}, ///[]int32 empty live
-			deadPartition: partitions,
-			mutex:         &sync.Mutex{}, /**guarantee atomic for consumer*/
-			logic:         logic.Logic[any](v.LogicContainer.Logic),
+			config: v,
+			//client:        &c,
+			worker:  c,
+			groupId: v.GroupId,
+			//worker:      toMap(partitions), //all dead(nil) for init
+			topic:       v.Topic,
+			live:        0,
+			concurrency: v.Concurrency,
+			mutex:       &sync.Mutex{}, /**guarantee atomic for consumer*/
+			logic:       logic.Logic[any](v.LogicContainer.Logic),
 		}
 		retv[k] = csm
 	}
@@ -78,8 +76,8 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V]) map[string]*Consumer[
 	return retv
 }
 
-func toMap(nums []int32) map[int32]*sarama.PartitionConsumer {
-	var retv = make(map[int32]*sarama.PartitionConsumer)
+func toMap(nums []int32) map[int32]*cluster.Consumer {
+	var retv = make(map[int32]*cluster.Consumer)
 
 	for _, v := range nums {
 		retv[v] = nil
@@ -91,40 +89,25 @@ func (p *Process[V]) Consume() map[int32]int {
 	retv := make(map[int32]int)
 	for _, v := range p.consumers {
 
-		cpy := v.deadPartition
-		for _, partitionNum := range cpy {
+		numToRevive := v.concurrency - v.live
+		for i := 0; i < numToRevive; i++ {
 			v.mutex.Lock()
-			c, err := (*v.client).ConsumePartition(v.topic, partitionNum, sarama.OffsetOldest)
-
-			if err != nil {
-				fmt.Println(err)
-				continue
-			} else {
-				//success to revive dead Partition
-				v.deadPartition = util.FilterExactValue(v.deadPartition, partitionNum)
-				v.livePartition = append(v.livePartition, partitionNum)
-				v.worker[partitionNum] = &c
-				num := partitionNum
+			{
 
 				go func() {
 
-					fmt.Println(num)
 					for {
 						select {
-						case msg1 := <-(*v.worker[num]).Messages():
+						case msg1 := <-(*v.worker).Messages():
 							res := (v.logic.Deserialize)(msg1.Value)
 							//fmt.Println(res)
 							v.logic.DoAction(res)
-						case msg1 := <-(*v.worker[num]).Errors():
+						case msg1 := <-(*v.worker).Errors():
 							fmt.Println("error", msg1)
-							err := (*v.worker[num]).Close()
+							err := (*v.worker).Close()
 							if err != nil {
 								fmt.Printf("%s", err)
 							}
-							*v.worker[num] = nil
-							v.mutex.Lock()
-							v.livePartition = append(v.livePartition[:1], v.livePartition[2:]...)
-							v.mutex.Unlock()
 							break
 
 						}

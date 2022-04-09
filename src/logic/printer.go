@@ -19,7 +19,7 @@ func (p Printer) Deserialize(bytes []byte) *any {
 	//return string(bytes)
 }
 
-func (p Printer) DoAction(v any) {
+func (p Printer) DoAction(v any) error {
 	if reflect.ValueOf(v).Kind() == reflect.Ptr {
 		var value = v.(*interface{})
 		fmt.Printf("Action %s\n", *value)
@@ -27,6 +27,7 @@ func (p Printer) DoAction(v any) {
 		fmt.Printf("Action %s\n", v)
 	}
 
+	return nil
 }
 
 func (p Printer) DefaultValue() *any {

@@ -2,13 +2,13 @@ package consumer
 
 import (
 	"fmt"
-	"github.com/Shopify/sarama"
-	cluster "github.com/bsm/sarama-cluster"
 	"go-ka/config"
 	"go-ka/logic"
-	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/Shopify/sarama"
+	cluster "github.com/bsm/sarama-cluster"
 )
 
 type Consumer[V any] struct {
@@ -18,7 +18,6 @@ type Consumer[V any] struct {
 	topic       string
 	live        int32
 	concurrency int32
-	mutex       *sync.Mutex /**guarantee atomic for consumer*/
 	logic       logic.Logic[any]
 }
 
@@ -58,20 +57,13 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V], zkper []string) map[s
 			panic(err)
 		}
 
-		/*if err2 != nil {
-			panic(err2)
-		}*/
-
 		csm := &Consumer[V]{
-			config: v,
-			//client:        &c,
-			worker:  c,
-			groupId: v.GroupId,
-			//worker:      toMap(partitions), //all dead(nil) for init
+			config:      v,
+			worker:      c,
+			groupId:     v.GroupId,
 			topic:       v.Topic,
 			live:        0,
 			concurrency: v.Concurrency,
-			mutex:       &sync.Mutex{}, /**guarantee atomic for consumer*/
 			logic:       logic.Logic[any](v.LogicContainer.Logic),
 		}
 		retv[k] = csm

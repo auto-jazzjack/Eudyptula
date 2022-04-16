@@ -3,8 +3,10 @@ package config
 import (
 	"fmt"
 	"go-ka/logic"
-	yaml "gopkg.in/yaml.v3"
 	"io/ioutil"
+	"os"
+
+	yaml "gopkg.in/yaml.v3"
 )
 
 var printerMapping = map[string]logic.Logic[any]{
@@ -32,7 +34,8 @@ type LogicContainer struct {
 }
 
 func NewProcessConfigs[V any]() *ProcessorConfigs[V] {
-	yamlFile, err := ioutil.ReadFile("./src/application.yaml")
+	path, _ := os.Getwd()
+	yamlFile, err := ioutil.ReadFile(path + "/application.yaml")
 	if err != nil {
 		fmt.Println(err)
 		panic("yamlFile.Get err")

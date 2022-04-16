@@ -1,10 +1,13 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"go-ka/logic"
-	yaml "gopkg.in/yaml.v3"
 	"io/ioutil"
+	"os"
+
+	yaml "gopkg.in/yaml.v3"
 )
 
 var printerMapping = map[string]logic.Logic[any]{
@@ -25,6 +28,9 @@ type ProcessorConfig[V any] struct {
 	PollTimeout    int            `yaml:"PollTimeout"`
 	LogicContainer LogicContainer `yaml:"LogicContainer"`
 	FetchSize      int32          `yaml:"FetchSize"`
+	UserName       string         `yaml:"UserName"`
+	Password       string         `yaml:"Password"`
+	Algorithm      string         `yaml:"Algorithm"`
 }
 
 type LogicContainer struct {
@@ -32,7 +38,8 @@ type LogicContainer struct {
 }
 
 func NewProcessConfigs[V any]() *ProcessorConfigs[V] {
-	yamlFile, err := ioutil.ReadFile("./src/application.yaml")
+	path, _ := os.Getwd()
+	yamlFile, err := ioutil.ReadFile(path + "/application.yaml")
 	if err != nil {
 		fmt.Println(err)
 		panic("yamlFile.Get err")
@@ -52,6 +59,33 @@ func NewProcessConfigs[V any]() *ProcessorConfigs[V] {
 	return v
 }
 
+func validate(p ProcessorConfig[any]) error {
+
+	if p.BoostrapServer == "" {
+		return errors.New("Bootstrap server should be set")
+	}
+	if p.GroupId == "" {
+		return errors.New("GroupId server should be set")
+	}
+	if p.Concurrency <= 0 {
+		return errors.New("Concurrency server should be postive")
+	}
+	if p.PollTimeout <= 0 {
+		return errors.New("PollTimeout server should be postive")
+	}
+	if p.UserName != "" || p.Password != "" || p.Algorithm != "" {
+		if p.UserName == "" {
+			return errors.New("GroupId server should be set")
+		}
+		if p.Password == "" {
+			return errors.New("return server should be set")
+		}
+		if p.Algorithm == "" {
+			return errors.New("Algorithm server should be set")
+		}
+	}
+	return nil
+}
 func (target *LogicContainer) UnmarshalYAML(value *yaml.Node) error {
 
 	//reflect.New(value.Value)

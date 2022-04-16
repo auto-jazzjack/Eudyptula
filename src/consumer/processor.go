@@ -2,13 +2,13 @@ package consumer
 
 import (
 	"fmt"
-	"github.com/Shopify/sarama"
-	cluster "github.com/bsm/sarama-cluster"
 	"go-ka/config"
 	"go-ka/logic"
-	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/Shopify/sarama"
+	cluster "github.com/bsm/sarama-cluster"
 )
 
 type Consumer[V any] struct {
@@ -18,7 +18,6 @@ type Consumer[V any] struct {
 	topic       string
 	live        int32
 	concurrency int32
-	mutex       *sync.Mutex /**guarantee atomic for consumer*/
 	logic       logic.Logic[any]
 }
 
@@ -29,12 +28,13 @@ type Process[V any] struct {
 
 type ProcessImpl interface {
 	Consume() int
+	Rewind(time.Time) map[string][]string
 }
 
 func NewProcess[V any](cfgs *config.ProcessorConfigs[V]) *Process[V] {
 	return &Process[V]{
 		configs:   *cfgs,
-		consumers: newConsumers[V](cfgs, cfgs.Zookeeper),
+		consumers: newConsumers(cfgs, cfgs.Zookeeper),
 	}
 }
 
@@ -52,26 +52,26 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V], zkper []string) map[s
 		newConfig.Consumer.Fetch.Max = v.FetchSize
 		newConfig.Consumer.MaxProcessingTime = time.Duration(v.PollTimeout * 1000 * 1000) //milli to nao
 
+		//If userName is not empty we can suppose that sasl is enabled
+		if v.UserName != "" {
+			newConfig.Net.SASL.Password = v.Password
+			newConfig.Net.SASL.Enable = true
+			newConfig.Net.SASL.User = v.UserName
+			newConfig.Net.SASL.Mechanism = sarama.SASLMechanism(v.Algorithm)
+		}
 		c, err := cluster.NewConsumer([]string{v.BoostrapServer}, zkper, v.GroupId, []string{v.Topic}, newConfig)
 
 		if err != nil {
 			panic(err)
 		}
 
-		/*if err2 != nil {
-			panic(err2)
-		}*/
-
 		csm := &Consumer[V]{
-			config: v,
-			//client:        &c,
-			worker:  c,
-			groupId: v.GroupId,
-			//worker:      toMap(partitions), //all dead(nil) for init
+			config:      v,
+			worker:      c,
+			groupId:     v.GroupId,
 			topic:       v.Topic,
 			live:        0,
 			concurrency: v.Concurrency,
-			mutex:       &sync.Mutex{}, /**guarantee atomic for consumer*/
 			logic:       logic.Logic[any](v.LogicContainer.Logic),
 		}
 		retv[k] = csm
@@ -80,13 +80,13 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V], zkper []string) map[s
 	return retv
 }
 
-func toMap(nums []int32) map[int32]*cluster.Consumer {
-	var retv = make(map[int32]*cluster.Consumer)
+/**
+Reqeust : target time stamp
+Return : Key : consumerName, Value : partition
+*/
+func (p *Process[V]) Rewind(date time.Time) map[string][]string {
+	return nil
 
-	for _, v := range nums {
-		retv[v] = nil
-	}
-	return retv
 }
 
 func (p *Process[V]) Consume() map[string]int32 {
@@ -119,7 +119,7 @@ func (p *Process[V]) Consume() map[string]int32 {
 						case msg1 := <-(*v.worker).Errors():
 							fmt.Println("error", msg1)
 							atomic.AddInt32(&v.live, -1)
-							break
+							return
 						}
 					}
 				}()

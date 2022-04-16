@@ -16,6 +16,7 @@ func main() {
 
 	c.Invoke(func(cluster *controller.Cluster[any]) {
 		http.HandleFunc(controller.REVIVE, cluster.ServeHTTP)
+		http.HandleFunc(controller.REWIND, cluster.ServeHTTP)
 	})
 
 	err := http.ListenAndServe(":9001", nil)

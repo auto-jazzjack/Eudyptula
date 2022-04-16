@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"errors"
 	"fmt"
 	"go-ka/config"
 	"net/http"
@@ -44,7 +43,7 @@ date should be yyyy-mm-dd-hh-mm
 func (m *Manager[V]) Rewind(date string) (map[string][]string, error) {
 	yourDate, err := time.Parse("2006-01-02 15:04:05", date)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("%d occurs", http.StatusBadRequest))
+		return nil, fmt.Errorf("%d occurs", http.StatusBadRequest)
 	}
 
 	return m.processors.Rewind(yourDate), nil

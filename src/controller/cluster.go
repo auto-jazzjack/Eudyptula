@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-ka/consumer"
+	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 const REVIVE = "/api/v1/cluster/revive"
@@ -29,8 +31,11 @@ func (c *Cluster[V]) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	var err error
 	if req.URL.Path == REVIVE {
 		result, err = json.Marshal(c.manager.ExecuteAll())
-	} else if req.URL.Path == REWIND {
-		c.manager.ExecuteAll()
+	} else if strings.HasPrefix(req.URL.Path, REWIND) {
+		fmt.Print(req.URL.Path)
+		body, _ := ioutil.ReadAll(req.Body)
+		tmp, _ := c.manager.Rewind(string(body))
+		result, err = json.Marshal(tmp)
 	}
 
 	if err != nil {

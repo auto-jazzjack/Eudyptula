@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-ka/consumer"
-	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
 const REVIVE = "/api/v1/cluster/revive"
-const REWIND = "/api/v1/cluster/rewind"
+const REWIND = "/api/v1/cluster/rewind/"
 
 type Cluster[V any] struct {
 	manager *consumer.Manager[V]
@@ -32,9 +31,13 @@ func (c *Cluster[V]) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	if req.URL.Path == REVIVE {
 		result, err = json.Marshal(c.manager.ExecuteAll())
 	} else if strings.HasPrefix(req.URL.Path, REWIND) {
-		fmt.Print(req.URL.Path)
-		body, _ := ioutil.ReadAll(req.Body)
-		tmp, _ := c.manager.Rewind(string(body))
+
+		date := req.URL.Query().Get("date")
+		tmp, err2 := c.manager.Rewind(date)
+		if err2 != nil {
+			res.WriteHeader(500)
+			res.Write([]byte(fmt.Sprint(err2)))
+		}
 		result, err = json.Marshal(tmp)
 	}
 

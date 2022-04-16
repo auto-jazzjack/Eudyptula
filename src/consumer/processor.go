@@ -51,6 +51,7 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V], zkper []string) map[s
 		newConfig.Consumer.Fetch.Max = v.FetchSize
 		newConfig.Consumer.MaxProcessingTime = time.Duration(v.PollTimeout * 1000 * 1000) //milli to nao
 
+		//If userName is not empty we can suppose that sasl is enabled
 		if v.UserName != "" {
 			newConfig.Net.SASL.Password = v.Password
 			newConfig.Net.SASL.Enable = true

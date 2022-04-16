@@ -28,6 +28,7 @@ type Process[V any] struct {
 
 type ProcessImpl interface {
 	Consume() int
+	Rewind(time.Time) map[string][]string
 }
 
 func NewProcess[V any](cfgs *config.ProcessorConfigs[V]) *Process[V] {
@@ -77,6 +78,15 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V], zkper []string) map[s
 	}
 
 	return retv
+}
+
+/**
+Reqeust : target time stamp
+Return : Key : consumerName, Value : partition
+*/
+func (p *Process[V]) Rewind(date time.Time) map[string][]string {
+	return nil
+
 }
 
 func (p *Process[V]) Consume() map[string]int32 {

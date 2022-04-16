@@ -8,6 +8,7 @@ import (
 )
 
 const REVIVE = "/api/v1/cluster/revive"
+const REWIND = "/api/v1/cluster/rewind"
 
 type Cluster[V any] struct {
 	manager *consumer.Manager[V]
@@ -24,7 +25,14 @@ Actually request is usless for this phase
 */
 func (c *Cluster[V]) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 
-	result, err := json.Marshal(c.manager.ExecuteAll())
+	var result []byte
+	var err error
+	if req.URL.Path == REVIVE {
+		result, err = json.Marshal(c.manager.ExecuteAll())
+	} else if req.URL.Path == REWIND {
+		c.manager.ExecuteAll()
+	}
+
 	if err != nil {
 		res.WriteHeader(500)
 		_, err := res.Write([]byte(fmt.Sprint(err)))

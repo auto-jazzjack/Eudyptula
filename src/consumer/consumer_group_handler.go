@@ -7,7 +7,6 @@ import (
 )
 
 type ConsumerGroupHandlerImpl struct {
-	ready   chan bool
 	logic   logic.Logic[any]
 	topic   string
 	session *sarama.ConsumerGroupSession
@@ -19,7 +18,6 @@ func NewConsumerGroupHandler() ConsumerGroupHandlerImpl {
 
 func (c ConsumerGroupHandlerImpl) GetPartitons() []int32 {
 	if c.session != nil && c.topic != "" && len((*c.session).Claims()) > 0 {
-
 		retv := (*c.session).Claims()[c.topic]
 		return retv
 	}

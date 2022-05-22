@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"fmt"
 	"go-ka/config"
 	"go-ka/logic"
 	"strings"
@@ -118,15 +119,15 @@ func (p *Process[V]) Consume() map[string]int32 {
 		}
 
 		if v.handler != nil {
-
+			fmt.Print("already consuming" + string(v.handler.GetPartitons()))
 		} else {
 
 			consumer := ConsumerGroupHandlerImpl{
-				ready: make(chan bool),
 				logic: v.logic,
 				topic: v.topic,
 			}
 
+			v.handler = &consumer
 			go func() {
 
 				var cancle context.CancelFunc
@@ -149,8 +150,6 @@ func (p *Process[V]) Consume() map[string]int32 {
 					}
 				}
 			}()
-
-			<-consumer.ready // Await till the consumer has been set up
 		}
 
 	}

@@ -118,7 +118,7 @@ func (p *Process[V]) Consume() map[string]int32 {
 			retv["topic:"+v.topic+" group id : "+v.groupId] = numToRevive
 		}
 
-		if v.handler != nil {
+		if v.handler != nil || (v.handler != nil && len(v.handler.GetPartitons()) == 0) {
 			fmt.Print("already consuming" + string(v.handler.GetPartitons()))
 		} else {
 

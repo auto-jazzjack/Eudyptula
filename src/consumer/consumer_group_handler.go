@@ -22,7 +22,7 @@ func (c ConsumerGroupHandlerImpl) GetPartitons() []int32 {
 		return retv
 	}
 
-	return nil
+	return []int32{}
 }
 func (c *ConsumerGroupHandlerImpl) Setup(session sarama.ConsumerGroupSession) error {
 	c.session = &session

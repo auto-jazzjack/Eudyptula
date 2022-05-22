@@ -6,6 +6,7 @@ import (
 	"go-ka/config"
 	"go-ka/logic"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Shopify/sarama"
@@ -113,18 +114,17 @@ func (p *Process[V]) Consume() map[string]int32 {
 	retv := make(map[string]int32)
 	for _, v := range p.consumers {
 
-		numToRevive := v.concurrency - v.live
-		if numToRevive > 0 {
-			retv["topic:"+v.topic+" group id : "+v.groupId] = numToRevive
-		}
-
 		if v.handler != nil || (v.handler != nil && len(v.handler.GetPartitons()) == 0) {
 			fmt.Print("already consuming" + string(v.handler.GetPartitons()))
+
+			retv["topic:"+v.topic+" group id : "+v.groupId] = 0
+
 		} else {
 
 			consumer := ConsumerGroupHandlerImpl{
 				logic: v.logic,
 				topic: v.topic,
+				wg:    sync.WaitGroup{},
 			}
 
 			v.handler = &consumer
@@ -150,6 +150,8 @@ func (p *Process[V]) Consume() map[string]int32 {
 					}
 				}
 			}()
+			v.handler.wg.Wait()
+			retv["topic:"+v.topic+" group id : "+v.groupId] = int32(len(v.handler.GetPartitons()))
 		}
 
 	}

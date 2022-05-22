@@ -14,8 +14,14 @@ type ConsumerGroupHandlerImpl struct {
 	wg      sync.WaitGroup
 }
 
-func NewConsumerGroupHandler() ConsumerGroupHandlerImpl {
-	return ConsumerGroupHandlerImpl{}
+func NewConsumerGroupHandler(logic logic.Logic[any], topic string) ConsumerGroupHandlerImpl {
+	one := sync.WaitGroup{}
+	one.Add(1)
+	return ConsumerGroupHandlerImpl{
+		logic: logic,
+		topic: topic,
+		wg:    one,
+	}
 }
 
 func (c ConsumerGroupHandlerImpl) GetPartitons() []int32 {

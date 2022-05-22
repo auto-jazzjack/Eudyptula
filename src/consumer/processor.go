@@ -121,11 +121,10 @@ func (p *Process[V]) Consume() map[string]int32 {
 
 		} else {
 
-			consumer := ConsumerGroupHandlerImpl{
-				logic: v.logic,
-				topic: v.topic,
-				wg:    sync.WaitGroup{},
-			}
+			wg := sync.WaitGroup{}
+			wg.Add(1)
+
+			consumer := NewConsumerGroupHandler(v.logic, v.topic)
 
 			v.handler = &consumer
 			go func() {

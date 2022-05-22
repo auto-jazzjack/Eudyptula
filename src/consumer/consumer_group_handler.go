@@ -7,15 +7,27 @@ import (
 )
 
 type ConsumerGroupHandlerImpl struct {
-	ready chan bool
-	logic logic.Logic[any]
+	ready   chan bool
+	logic   logic.Logic[any]
+	topic   string
+	session *sarama.ConsumerGroupSession
 }
 
 func NewConsumerGroupHandler() ConsumerGroupHandlerImpl {
 	return ConsumerGroupHandlerImpl{}
 }
 
-func (c ConsumerGroupHandlerImpl) Setup(sarama.ConsumerGroupSession) error {
+func (c ConsumerGroupHandlerImpl) GetPartitons() []int32 {
+	if c.session != nil && c.topic != "" && len((*c.session).Claims()) > 0 {
+
+		retv := (*c.session).Claims()[c.topic]
+		return retv
+	}
+
+	return nil
+}
+func (c *ConsumerGroupHandlerImpl) Setup(session sarama.ConsumerGroupSession) error {
+	c.session = &session
 	return nil
 }
 
@@ -38,7 +50,6 @@ func (c ConsumerGroupHandlerImpl) ConsumeClaim(session sarama.ConsumerGroupSessi
 			return err
 		}
 		session.Commit()
-		session.MarkMessage(message, "")
 	}
 
 	return nil

@@ -14,17 +14,19 @@ import (
 )
 
 type Consumer[V any] struct {
-	config      config.ProcessorConfig[V]
-	client      sarama.ConsumerGroup
-	groupId     string
-	topic       string
-	live        int32
-	concurrency int32
-	logic       logic.Logic[any]
+	config        config.ProcessorConfig[V]
+	groupId       string
+	topic         string
+	live          int32
+	concurrency   int32
+	client        sarama.ConsumerGroup
+	logic         logic.Logic[any]
+	livePartition map[string]bool
 }
 
 type Process[V any] struct {
-	configs   config.ProcessorConfigs[V]
+	configs config.ProcessorConfigs[V]
+
 	consumers map[string]*Consumer[V]
 }
 
@@ -44,7 +46,6 @@ func NewProcess[V any](cfgs *config.ProcessorConfigs[V]) *Process[V] {
 func newConsumers[V any](cfgs *config.ProcessorConfigs[V], zkper []string) map[string]*Consumer[V] {
 
 	var retv = make(map[string]*Consumer[V])
-
 	for k, v := range cfgs.Processors {
 
 		newConfig := sarama.NewConfig()
@@ -89,8 +90,8 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V], zkper []string) map[s
 
 		csm := &Consumer[V]{
 			config:      v,
-			client:      client,
 			groupId:     v.GroupId,
+			client:      client,
 			topic:       v.Topic,
 			live:        0,
 			concurrency: v.Concurrency,
@@ -151,7 +152,6 @@ func (p *Process[V]) Consume() map[string]int32 {
 					if ctx.Err() != nil {
 						return
 					}
-					consumer.ready = make(chan bool)
 				}
 			}()
 

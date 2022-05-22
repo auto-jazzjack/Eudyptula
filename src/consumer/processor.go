@@ -128,23 +128,24 @@ func (p *Process[V]) Consume() map[string]int32 {
 			consumer := ConsumerGroupHandlerImpl{
 				ready: make(chan bool),
 				logic: v.logic,
+				topic: v.topic,
 			}
+
 			go func() {
 				atomic.AddInt32(&numToRevive, 1)
+				var cancle context.CancelFunc
 
 				defer func() {
 					wg.Done()
 					//if go func finished, let's assume consumer dead.
 					atomic.AddInt32(&numToRevive, -1)
+					cancle()
 				}()
 
 				for {
 
-					ctx, err := context.WithCancel(context.Background())
-					if err != nil {
-						break
-
-					}
+					ctx, can := context.WithCancel(context.Background())
+					cancle = can
 
 					if err := v.client.Consume(ctx, strings.Split(v.topic, ","), &consumer); err != nil {
 						log.Panicf("Error from consumer: %v", err)

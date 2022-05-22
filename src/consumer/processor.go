@@ -50,33 +50,39 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V], zkper []string) map[s
 		newConfig := sarama.NewConfig()
 
 		newConfig.Consumer.Return.Errors = false
-		newConfig.Consumer.Fetch.Max = 10
+		newConfig.Consumer.Fetch.Max = 15
 		newConfig.Consumer.Offsets.Initial = -1
 		newConfig.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
-
-		//newConfig.Consumer.MaxProcessingTime = time.Duration(v.PollTimeout * 1000 * 1000) //milli to nao
+		newConfig.Consumer.MaxProcessingTime = time.Duration(v.PollTimeout * 1000 * 1000) //milli to nao
 
 		//If userName is not empty we can suppose that sasl is enabled
 		if v.UserName != "" {
 			newConfig.Net.SASL.Password = v.Password
 			newConfig.Net.SASL.Enable = true
 			newConfig.Net.SASL.User = v.UserName
-			newConfig.Net.SASL.Mechanism = sarama.SASLTypeSCRAMSHA256
 			newConfig.Net.SASL.Handshake = true
 
-			newConfig.Net.SASL.SCRAMClientGeneratorFunc = func() sarama.SCRAMClient {
-				return &XDGSCRAMClient{
-					HashGeneratorFcn: SHA256,
-				}
+			if v.Algorithm == "SCRAM-SHA-256" {
+				newConfig.Net.SASL.Mechanism = sarama.SASLTypeSCRAMSHA256
+				newConfig.Net.SASL.SCRAMClientGeneratorFunc = func() sarama.SCRAMClient {
+					return &XDGSCRAMClient{
+						HashGeneratorFcn: SHA256,
+					}
 
+				}
+			} else if v.Algorithm == "SCRAM-SHA-512" {
+				newConfig.Net.SASL.Mechanism = sarama.SASLTypeSCRAMSHA512
+				newConfig.Net.SASL.SCRAMClientGeneratorFunc = func() sarama.SCRAMClient {
+					return &XDGSCRAMClient{
+						HashGeneratorFcn: SHA512,
+					}
+
+				}
 			}
 
 		}
 
 		client, err := sarama.NewConsumerGroup([]string{v.BoostrapServer}, v.GroupId, newConfig)
-		//c, err := cluster.NewConsumer([]string{v.BoostrapServer}, zkper, v.GroupId, []string{v.Topic}, newConfig)
-		//a,_ := sarama.NewConsumerGroup(nil, nil, nil)
-		//a.Consume()
 		if err != nil {
 			panic(err)
 		}
@@ -118,21 +124,26 @@ func (p *Process[V]) Consume() map[string]int32 {
 
 			wg := &sync.WaitGroup{}
 			wg.Add(1)
-			consumer := CustomConsumerGroupHandlerImpl{
+			consumer := ConsumerGroupHandlerImpl{
 				ready: make(chan bool),
+				logic: v.logic,
 			}
 			go func() {
 				atomic.AddInt32(&numToRevive, 1)
 
 				defer func() {
 					wg.Done()
+					//if go func finished, let's assume consumer dead.
 					atomic.AddInt32(&numToRevive, -1)
-
 				}()
 
 				for {
 
-					ctx, _ := context.WithCancel(context.Background())
+					ctx, err := context.WithCancel(context.Background())
+					if err != nil {
+						break
+
+					}
 
 					if err := v.client.Consume(ctx, strings.Split(v.topic, ","), &consumer); err != nil {
 						log.Panicf("Error from consumer: %v", err)

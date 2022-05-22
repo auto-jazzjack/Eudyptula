@@ -2,31 +2,29 @@ package consumer
 
 import (
 	"context"
+	"fmt"
 	"go-ka/config"
 	"go-ka/logic"
-	"log"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/Shopify/sarama"
 )
 
 type Consumer[V any] struct {
-	config        config.ProcessorConfig[V]
-	groupId       string
-	topic         string
-	live          int32
-	concurrency   int32
-	client        sarama.ConsumerGroup
-	logic         logic.Logic[any]
-	livePartition map[string]bool
+	config      config.ProcessorConfig[V]
+	groupId     string
+	topic       string
+	live        int32
+	concurrency int32
+	client      sarama.ConsumerGroup
+	logic       logic.Logic[any]
+	handler     *ConsumerGroupHandlerImpl
 }
 
 type Process[V any] struct {
-	configs config.ProcessorConfigs[V]
-
+	configs   config.ProcessorConfigs[V]
 	consumers map[string]*Consumer[V]
 }
 
@@ -116,29 +114,25 @@ func (p *Process[V]) Consume() map[string]int32 {
 	retv := make(map[string]int32)
 	for _, v := range p.consumers {
 
-		numToRevive := v.concurrency - v.live
-		if numToRevive > 0 {
-			retv["topic:"+v.topic+" group id : "+v.groupId] = numToRevive
-		}
+		if v.handler != nil || (v.handler != nil && len(v.handler.GetPartitons()) == 0) {
+			fmt.Print("already consuming" + string(v.handler.GetPartitons()))
 
-		for i := int32(0); i < numToRevive; i++ {
+			retv["topic:"+v.topic+" group id : "+v.groupId] = 0
 
-			wg := &sync.WaitGroup{}
+		} else {
+
+			wg := sync.WaitGroup{}
 			wg.Add(1)
-			consumer := ConsumerGroupHandlerImpl{
-				ready: make(chan bool),
-				logic: v.logic,
-				topic: v.topic,
-			}
 
+			consumer := NewConsumerGroupHandler(v.logic, v.topic)
+
+			v.handler = &consumer
 			go func() {
-				atomic.AddInt32(&numToRevive, 1)
+
 				var cancle context.CancelFunc
 
 				defer func() {
-					wg.Done()
 					//if go func finished, let's assume consumer dead.
-					atomic.AddInt32(&numToRevive, -1)
 					cancle()
 				}()
 
@@ -148,16 +142,15 @@ func (p *Process[V]) Consume() map[string]int32 {
 					cancle = can
 
 					if err := v.client.Consume(ctx, strings.Split(v.topic, ","), &consumer); err != nil {
-						log.Panicf("Error from consumer: %v", err)
+						return
 					}
 					if ctx.Err() != nil {
 						return
 					}
 				}
 			}()
-
-			<-consumer.ready // Await till the consumer has been set up
-
+			v.handler.wg.Wait()
+			retv["topic:"+v.topic+" group id : "+v.groupId] = int32(len(v.handler.GetPartitons()))
 		}
 
 	}

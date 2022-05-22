@@ -2,32 +2,40 @@ package consumer
 
 import (
 	"go-ka/logic"
+	"sync"
 
 	"github.com/Shopify/sarama"
 )
 
 type ConsumerGroupHandlerImpl struct {
-	ready   chan bool
 	logic   logic.Logic[any]
 	topic   string
 	session *sarama.ConsumerGroupSession
+	wg      sync.WaitGroup
 }
 
-func NewConsumerGroupHandler() ConsumerGroupHandlerImpl {
-	return ConsumerGroupHandlerImpl{}
+func NewConsumerGroupHandler(logic logic.Logic[any], topic string) ConsumerGroupHandlerImpl {
+	one := sync.WaitGroup{}
+	one.Add(1)
+	return ConsumerGroupHandlerImpl{
+		logic: logic,
+		topic: topic,
+		wg:    one,
+	}
 }
 
 func (c ConsumerGroupHandlerImpl) GetPartitons() []int32 {
 	if c.session != nil && c.topic != "" && len((*c.session).Claims()) > 0 {
-
 		retv := (*c.session).Claims()[c.topic]
 		return retv
 	}
 
-	return nil
+	return []int32{}
 }
 func (c *ConsumerGroupHandlerImpl) Setup(session sarama.ConsumerGroupSession) error {
 	c.session = &session
+
+	c.wg.Done()
 	return nil
 }
 

@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"go-ka/config"
 	"go-ka/logic"
@@ -105,8 +106,13 @@ func newConsumers[V any](cfgs *config.ProcessorConfigs[V], zkper []string) map[s
 Reqeust : target time stamp
 Return : Key : consumerName, Value : partition
 */
-func (p *Process[V]) Rewind(date time.Time) map[string][]string {
-	return nil
+func (p *Process[V]) Rewind(processor string, date time.Time) (map[string]string, error) {
+	v, ok := p.consumers[processor]
+	if !ok {
+		return nil, errors.New("no such consumer")
+	} else {
+		return v.handler.ConsumeOffset(date), nil
+	}
 
 }
 

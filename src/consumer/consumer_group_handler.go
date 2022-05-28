@@ -1,8 +1,10 @@
 package consumer
 
 import (
+	"fmt"
 	"go-ka/logic"
 	"sync"
+	"time"
 
 	"github.com/Shopify/sarama"
 )
@@ -43,6 +45,20 @@ func (c *ConsumerGroupHandlerImpl) Setup(session sarama.ConsumerGroupSession) er
 // but before the offsets are committed for the very last time.
 func (c ConsumerGroupHandlerImpl) Cleanup(sarama.ConsumerGroupSession) error {
 	return nil
+}
+
+func (c ConsumerGroupHandlerImpl) ConsumeOffset(offset time.Time) map[string]string {
+
+	partition := c.GetPartitons()
+
+	retv := make(map[string]string)
+	epoch := offset.Unix()
+
+	for i := 0; i < len(partition); i++ {
+		(*c.session).ResetOffset(c.topic, partition[i], epoch, "")
+		retv[fmt.Sprintf("%v", partition[i])] = fmt.Sprintf("%v", epoch)
+	}
+	return retv
 }
 
 // ConsumeClaim must start a consumer loop of ConsumerGroupClaim's Messages().

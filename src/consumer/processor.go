@@ -109,10 +109,9 @@ Return : Key : consumerName, Value : partition
 func (p *Process[V]) Rewind(processor string, date time.Time) (map[string]string, error) {
 	v, ok := p.consumers[processor]
 	if !ok {
-		return nil, errors.New("No such consumer")
+		return nil, errors.New("no such consumer")
 	} else {
-		v.handler.ConsumeOffset(date)
-		return v, nil
+		return v.handler.ConsumeOffset(date), nil
 	}
 
 }

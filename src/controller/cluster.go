@@ -33,7 +33,8 @@ func (c *Cluster[V]) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	} else if strings.HasPrefix(req.URL.Path, REWIND) {
 
 		date := req.URL.Query().Get("date")
-		tmp, err2 := c.manager.Rewind(date)
+		processor := req.URL.Query().Get("processor")
+		tmp, err2 := c.manager.Rewind(processor, date)
 		if err2 != nil {
 			res.WriteHeader(500)
 			res.Write([]byte(fmt.Sprint(err2)))
